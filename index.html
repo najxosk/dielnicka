@@ -519,13 +519,18 @@ function showIntro(){
 }
 
 /* ============ OVLÁDANIE ============ */
-boardEl.addEventListener("click", function(e){
-  var el = e.target.closest(".cell");
-  if(el) tap(Number(el.dataset.i));
+/* Reagujeme priamo na pointerup — funguje rovnako pre prst aj myš,
+   a nezávisí od toho, či prehliadač pošle "click". */
+boardEl.addEventListener("pointerup", function(e){
+  var el = e.target.closest ? e.target.closest(".cell") : null;
+  if(!el) return;
+  e.preventDefault();
+  tap(Number(el.dataset.i));
 });
 boardEl.addEventListener("pointerdown", function(e){
-  e.preventDefault();
+  e.preventDefault(); /* zabráni označovaniu textu a skrolovaniu pri ťahaní */
 });
+boardEl.addEventListener("touchstart", function(e){ e.preventDefault(); }, {passive:false});
 $("mute").addEventListener("click", function(){
   muted = !muted;
   $("mute").textContent = muted ? "🔇" : "🔈";
