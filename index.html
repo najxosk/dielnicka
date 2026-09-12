@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dielnička — tehla</title>
+<style>
+  :root{
+    --bg:#1a1310;
+    --bg2:#241a15;
+    --panel:#2e211a;
+    --line:#4a352a;
+    --clay:#b4653a;
+    --sand:#e8d5b7;
+    --water:#4d8fb8;
+    --straw:#d8b95a;
+    --fire:#e8743b;
+    --ok:#8fbf5a;
+    --bad:#c9584a;
+    --text:#f0e3d3;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -20%, #3a2820 0%, transparent 70%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 6px),
+      var(--bg);
+    color:var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+  #app{
+    width:100%; max-width:520px; height:100%;
+    display:flex; flex-direction:column; gap:8px;
+    padding:10px 12px 14px;
+  }
+
+  /* ---- HUD ---- */
+  #hud{
+    display:grid; grid-template-columns:repeat(4,1fr) auto; gap:6px;
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:8px 10px;
+  }
+  .hud-item{display:flex; flex-direction:column; align-items:center; line-height:1.1;}
+  .hud-item .lbl{font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#a08a75;}
+  .hud-item b{font-size:19px; font-variant-numeric:tabular-nums;}
+  #time.low{color:var(--bad); animation:pulse .7s infinite;}
+  @keyframes pulse{50%{opacity:.4}}
+  #mute{
+    background:transparent; border:1px solid var(--line); color:var(--text);
+    border-radius:8px; font-size:15px; width:34px; cursor:pointer;
+  }
+
+  /* ---- Toast ---- */
+  #toast{
+    min-height:26px; text-align:center; font-size:13.5px; color:#cdbba6;
+    display:flex; align-items:center; justify-content:center;
+    transition:opacity .2s;
+  }
+  #toast.good{color:var(--ok);}
+  #toast.bad{color:var(--bad);}
+
+  /* ---- Board ---- */
+  #board{
+    flex:1; display:grid; grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(5,1fr);
+    gap:6px; background:var(--bg2); border:1px solid var(--line);
+    border-radius:14px; padding:8px; touch-action:none; min-height:0;
+  }
+  .cell{
+    position:relative; border-radius:10px;
+    background:linear-gradient(180deg,#2b1f18,#241a14);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    display:flex; align-items:center; justify-content:center;
+    transition:box-shadow .12s, background .12s;
+    overflow:hidden;
+  }
+  .cell.sel{box-shadow: inset 0 0 0 2px var(--sand); background:linear-gradient(180deg,#3b2b20,#2c2018);}
+  .cell.hot{box-shadow: inset 0 0 0 2px var(--ok);}
+  .tile{
+    position:absolute; inset:2px; border-radius:9px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:min(7vw,30px); cursor:pointer;
+    border:1px solid rgba(0,0,0,.35);
+    animation:pop .16s ease-out;
+  }
+  .tile span{font-size:9px; letter-spacing:.3px; color:rgba(0,0,0,.62); margin-top:1px; font-weight:600;}
+  @keyframes pop{from{transform:scale(.72); opacity:.2} to{transform:scale(1); opacity:1}}
+  .t-hlina{background:linear-gradient(180deg,#c07a4c,#9b5a33);}
+  .t-voda{background:linear-gradient(180deg,#6fb2d6,#3f7fa6);}
+  .t-slama{background:linear-gradient(180deg,#e6cd76,#c2a43f);}
+  .t-blato{background:linear-gradient(180deg,#8a6a52,#5d4433);}
+  .t-cesto{background:linear-gradient(180deg,#d9a15e,#b8763a); box-shadow:0 0 12px rgba(232,116,59,.45);}
+  .t-odpad{background:linear-gradient(180deg,#6d6a66,#4a4845); color:#ded8d2;}
+  .t-odpad span{color:rgba(255,255,255,.6);}
+  .t-odpad.ghost{opacity:.35;}
+
+  /* ---- Hint / pile ---- */
+  #hint{
+    font-size:11.5px; color:#8f7c6b; text-align:center; min-height:16px;
+  }
+
+  /* ---- Overlay ---- */
+  #overlay{
+    position:fixed; inset:0; background:rgba(12,8,6,.82); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; padding:16px; z-index:20;
+  }
+  #overlay.hidden{display:none;}
+  .panel{
+    width:100%; max-width:430px; background:linear-gradient(180deg,#33241c,#261a14);
+    border:1px solid var(--line); border-radius:16px; padding:20px;
+    box-shadow:0 18px 50px rgba(0,0,0,.6);
+  }
+  .panel h1{margin:0 0 4px; font-size:23px; letter-spacing:.5px;}
+  .panel h2{margin:0 0 10px; font-size:19px;}
+  .sub{color:#a08a75; font-size:12.5px; margin-bottom:14px;}
+  .rules{list-style:none; padding:0; margin:0 0 16px; font-size:14px; line-height:1.85;}
+  .rules li{padding-left:22px; position:relative;}
+  .rules li:before{content:"›"; position:absolute; left:6px; color:var(--fire);}
+  .kv{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line); font-size:14px;}
+  .kv b{font-variant-numeric:tabular-nums;}
+  .card{
+    margin:14px 0; padding:12px 14px; border-left:3px solid var(--fire);
+    background:rgba(232,116,59,.08); border-radius:0 10px 10px 0; font-size:13.5px; line-height:1.6;
+  }
+  .card .t{font-size:10.5px; letter-spacing:1.4px; text-transform:uppercase; color:var(--fire); display:block; margin-bottom:5px;}
+  button.big{
+    width:100%; padding:14px; margin-top:8px; border:none; border-radius:12px; cursor:pointer;
+    background:linear-gradient(180deg,#e8743b,#c4552a); color:#fff; font-size:16.5px; font-weight:700;
+    letter-spacing:.5px; box-shadow:0 6px 0 #8e3c1c;
+  }
+  button.big:active{transform:translateY(2px); box-shadow:0 4px 0 #8e3c1c;}
+  #fx{position:fixed; inset:0; pointer-events:none; z-index:30;}
+  .float{
+    position:fixed; font-weight:800; font-size:20px; pointer-events:none; z-index:40;
+    animation:float 1s ease-out forwards; text-shadow:0 2px 6px rgba(0,0,0,.7);
+  }
+  @keyframes float{to{transform:translateY(-46px); opacity:0;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <div class="hud-item"><span class="lbl">Čas</span><b id="time">60</b></div>
+    <div class="hud-item"><span class="lbl">Skóre</span><b id="score">0</b></div>
+    <div class="hud-item"><span class="lbl">Tehly</span><b id="bricks">0</b></div>
+    <div class="hud-item"><span class="lbl">Rekord</span><b id="best">0</b></div>
+    <button id="mute" title="Zvuk">🔈</button>
+  </div>
+  <div id="toast">Ťukni na vec, potom na druhú — spoja sa.</div>
+  <div id="board"></div>
+  <div id="hint">Hlína + voda = blato &nbsp;·&nbsp; blato + slama = cesto &nbsp;·&nbsp; ťukni na cesto a vypáli sa tehla</div>
+</div>
+
+<div id="overlay"><div class="panel" id="panel"></div></div>
+<canvas id="fx"></canvas>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ VECI NA PLOCHE ============ */
+var ING = {
+  hlina:{emoji:"🟤", label:"hlína", cls:"t-hlina"},
+  voda: {emoji:"💧", label:"voda",  cls:"t-voda"},
+  slama:{emoji:"🌾", label:"slama", cls:"t-slama"},
+  blato:{emoji:"🟫", label:"blato", cls:"t-blato"},
+  cesto:{emoji:"🟠", label:"cesto", cls:"t-cesto"},
+  odpad:{emoji:"⬛", label:"odpad", cls:"t-odpad"}
+};
+var ODPAD_NAMES = {
+  "hlina+hlina":"suchá hrudka",
+  "voda+voda":"mláka",
+  "slama+slama":"otep slamy",
+  "hlina+slama":"prach",
+  "blato+blato":"zlepenec",
+  "cesto+hlina":"pripálené cesto",
+  "cesto+voda":"rozmočené cesto",
+  "cesto+slama":"nedrží",
+  "cesto+blato":"zlepenec"
+};
+var ODPAD_WHY = {
+  "hlina+hlina":"Samotná hlina bez vody nedrží — rozsype sa.",
+  "voda+voda":"Voda s vodou nič nestavia.",
+  "slama+slama":"Slama sama nedrží tvar.",
+  "hlina+slama":"Hlína so slamou bez vody = prach. Najprv treba vodu.",
+  "blato+blato":"Blato s blatom je len viac blata.",
+  "cesto+hlina":"Cesto sa musí najprv spojiť so slamou.",
+  "cesto+voda":"Priveľa vody cesto rozmáča.",
+  "cesto+slama":"Cesto už slamu má — druhá dávka ho rozbije.",
+  "cesto+blato":"Cesto s blatom sa rozpadne."
+};
+/* správne recepty */
+var RECIPES = {
+  "hlina+voda":"blato",
+  "blato+slama":"cesto"
+};
+var FAKTY = [
+  "Hlína + voda vytvorí tvárnu hmotu. Bez vody sa suchá hlina rozsype na prach.",
+  "Slama v tehle je výstuž — drží ju pokope, aby pri sušení nepraskla. Dnešná obdoba je armovacia sieť v betóne.",
+  "Tehla sa vypaľuje okolo 1000 °C. Vypálením sa hlina zmení na keramiku: tvrdú a nerozpustnú vo vode.",
+  "Mokrá tehla sa nesmie sušiť rýchlo, inak praskne — voda musí odchádzať pomaly.",
+  "Pomer je dôležitý: veľa vody = cesto sa rozpadne, málo vody = tehla sa sype."
+];
+
+/* ============ STAV ============ */
+var N = 5, CELLS = N*N, ROUND = 60;
+var cells, selected, score, bricks, junkMerges, badMerges, timeLeft, running;
+var spawnTimer, spawnInterval, tickTimer, spawnAcc, best;
+var muted = false;
+
+var $ = function(id){ return document.getElementById(id); };
+var boardEl = $("board"), toastEl = $("toast");
+
+/* ============ ZVUK ============ */
+var actx = null;
+function initAudio(){
+  if(actx) return;
+  try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; }
+}
+function sfx(freq, dur, type, vol){
+  if(muted || !actx) return;
+  try{
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type||"sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol||0.12, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+function sfxMerge(){ sfx(520,0.09,"triangle",0.10); setTimeout(function(){sfx(780,0.10,"triangle",0.09);},70); }
+function sfxFire(){ sfx(300,0.16,"sawtooth",0.09); setTimeout(function(){sfx(880,0.22,"triangle",0.10);},90); }
+function sfxBad(){ sfx(150,0.20,"square",0.07); }
+function sfxEnd(){ [523,659,784,1046].forEach(function(f,i){ setTimeout(function(){sfx(f,0.28,"triangle",0.09);}, i*130); }); }
+
+/* ============ POMOCNÉ ============ */
+function key(a,b){ return a<b ? a+"+"+b : b+"+"+a; }
+function rand(a){ return Math.floor(Math.random()*a); }
+function toast(msg, kind){
+  toastEl.textContent = msg;
+  toastEl.className = kind || "";
+}
+function floatText(txt, color){
+  var d = document.createElement("div");
+  d.className = "float"; d.textContent = txt; d.style.color = color;
+  d.style.left = (window.innerWidth/2 - 30) + "px";
+  d.style.top = (window.innerHeight*0.42) + "px";
+  document.body.appendChild(d);
+  setTimeout(function(){ d.remove(); }, 1000);
+}
+
+/* ============ VYKRESLENIE ============ */
+function render(){
+  var html = "";
+  for(var i=0;i<CELLS;i++){
+    var c = cells[i];
+    var cls = "cell" + (selected===i ? " sel" : "");
+    html += '<div class="'+cls+'" data-i="'+i+'">';
+    if(c){
+      var ing = ING[c];
+      html += '<div class="tile '+ing.cls+'" data-i="'+i+'">'+ing.emoji;
+      if(c==="odpad") html += '<span>'+ing.label+'</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  boardEl.innerHTML = html;
+  $("score").textContent = score;
+  $("bricks").textContent = bricks;
+  $("time").textContent = timeLeft;
+  $("time").className = (timeLeft<=10 ? "low" : "");
+}
+
+/* ============ SPAWNOVANIE ============ */
+function spawn(){
+  var empties = [];
+  for(var i=0;i<CELLS;i++) if(!cells[i]) empties.push(i);
+  if(!empties.length) { endRound("Priestor je plný!"); return; }
+  var slot = empties[rand(empties.length)];
+  var r = Math.random();
+  cells[slot] = r<0.46 ? "hlina" : (r<0.78 ? "voda" : "slama");
+  render();
+}
+function fillStart(){
+  for(var i=0;i<7;i++) spawn();
+}
+
+/* ============ ŤUKNUTIE ============ */
+function tap(i){
+  if(!running) return;
+  var t = cells[i];
+
+  if(t === "cesto"){ fire(i); return; }
+  if(t === "odpad"){
+    if(selected!==null && cells[selected] === "odpad"){ combine(selected,i); return; }
+    toast("Toto je odpad. Spoj dva odpady — zmiznú.", "bad");
+    return;
+  }
+  if(t === null){
+    if(selected!==null && cells[selected] !== "odpad"){
+      cells[i] = cells[selected]; cells[selected] = null; selected = null;
+      sfx(420,0.06,"sine",0.06); render();
+      return;
+    }
+    selected = null; render(); return;
+  }
+  if(selected === null){ selected = i; render(); return; }
+  if(selected === i){ selected = null; render(); return; }
+  combine(selected, i);
+}
+
+function combine(a,b){
+  var x = cells[a], y = cells[b];
+  selected = null;
+  if(!x || !y){ render(); return; }
+
+  if(x==="odpad" && y==="odpad"){
+    cells[a] = null; cells[b] = null;
+    score = Math.max(0, score-10); badMerges++;
+    toast("Odpad vyčistený (-10).", "bad");
+    sfxBad(); render(); return;
+  }
+  if(x==="odpad" || y==="odpad"){
+    var keepIdx = (x==="odpad") ? a : b;
+    var eatIdx  = (x==="odpad") ? b : a;
+    cells[eatIdx] = null;
+    score = Math.max(0, score-15); badMerges++;
+    toast("Odpad zjedol surovinu (-15).", "bad");
+    sfxBad(); render(); return;
+  }
+
+  var k = key(x,y);
+  var res = RECIPES[k];
+  if(res){
+    cells[a] = res; cells[b] = null;
+    score += 25; sfxMerge();
+    toast(ING[x].label + " + " + ING[y].label + " = " + ING[res].label + "  (+25)", "good");
+    render(); return;
+  }
+
+  /* zlá zmes = odpad */
+  cells[a] = "odpad"; cells[b] = null;
+  score = Math.max(0, score-15); badMerges++;
+  var od = ODPAD_NAMES[k] || "odpad";
+  toast("Zlá zmes: " + (ODPAD_WHY[k]||"toto spolu nedrží") + "  (-15)", "bad");
+  sfxBad(); render();
+}
+
+/* ============ VYPÁLENIE TEHLY ============ */
+function fire(i){
+  if(!running || cells[i]!=="cesto") return;
+  cells[i] = null;
+  bricks++; score += 100;
+  sfxFire();
+  floatText("+100", "#8fbf5a");
+  toast("🧱 Tehla vypálená! (+100)", "good");
+  render();
+}
+
+/* ============ KOLO ============ */
+function startRound(){
+  cells = new Array(CELLS).fill(null);
+  selected = null; score = 0; bricks = 0; junkMerges = 0; badMerges = 0;
+  timeLeft = ROUND; running = true; spawnAcc = 0;
+  spawnInterval = 2200;
+  fillStart();
+  toast("Ide sa na to!", "good");
+  render();
+  $("overlay").classList.add("hidden");
+
+  clearInterval(spawnTimer); clearInterval(tickTimer);
+
+  var lastSpawn = Date.now();
+  spawnTimer = setInterval(function(){
+    if(!running) return;
+    var now = Date.now();
+    if(now - lastSpawn >= spawnInterval){ lastSpawn = now; spawn(); }
+  }, 120);
+
+  tickTimer = setInterval(function(){
+    if(!running) return;
+    timeLeft--;
+    render();
+    if(timeLeft<=0) endRound("Čas vypršal!");
+  }, 1000);
+}
+
+function endRound(reason){
+  if(!running) return;
+  running = false;
+  selected = null;
+  clearInterval(spawnTimer); clearInterval(tickTimer);
+  var rec = Number(localStorage.getItem("dielnicka_best")||0);
+  if(score > rec){ rec = score; localStorage.setItem("dielnicka_best", String(score)); }
+  best = rec;
+  $("best").textContent = best;
+  sfxEnd();
+  finalScene(bricks, Math.min(bricks, Math.floor(badMerges/2)), function(){
+    showResults(reason);
+  });
+}
+
+/* ============ ZÁVEREČNÁ SCÉNA (tehly padajú na kopu) ============ */
+function finalScene(count, cracked, done){
+  var cv = $("fx"), ctx = cv.getContext("2d");
+  var W = cv.width = window.innerWidth, H = cv.height = window.innerHeight;
+  var bricksArr = [], t0 = performance.now();
+  var finished = false;
+  function finish(){
+    if(finished) return;
+    finished = true;
+    try{ ctx.clearRect(0,0,W,H); }catch(e){}
+    done();
+  }
+  /* poistka: keby prehliadač pozastavil animáciu (napr. iná karta), výsledky sa ukážu tak či tak */
+  setTimeout(finish, 5000);
+  var show = Math.min(count, 13);
+  for(var i=0;i<show;i++){
+    bricksArr.push({
+      x: W/2 - 46 + (i%4)*24 - 30,
+      y: -60 - i*30,
+      w: 72, h: 30, rot: (Math.random()-0.5)*0.3,
+      vy: 0, landed: false,
+      broken: i < cracked,
+      delay: i*90
+    });
+  }
+  ctx.clearRect(0,0,W,H);
+  if(show === 0){ finish(); return; }
+
+  function step(now){
+    var el = now - t0;
+    ctx.clearRect(0,0,W,H);
+    var groundY = H*0.62;
+    var settled = 0;
+    for(var i=0;i<bricksArr.length;i++){
+      var b = bricksArr[i];
+      if(el < b.delay){ continue; }
+      var stackY = groundY - (i*31);
+      if(!b.landed){
+        b.vy += 0.9;
+        b.y += b.vy;
+        if(b.y >= stackY){ b.y = stackY; b.vy = 0; b.landed = true; if(b.broken) sfx(120,0.25,"square",0.08); }
+      }
+      if(b.landed) settled++;
+      drawBrick(ctx, b, W, groundY);
+    }
+    if(settled >= bricksArr.length && el > bricksArr[bricksArr.length-1].delay + 500){
+      setTimeout(finish, 450);
+      return;
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function drawBrick(ctx, b, W, groundY){
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate(b.rot);
+  if(b.broken){
+    ctx.fillStyle = "#5a4038";
+    ctx.fillRect(0,0,b.w,b.h);
+    ctx.fillStyle = "#2b1f18";
+    ctx.fillRect(b.w*0.35, 0, 4, b.h);
+    ctx.fillRect(b.w*0.62, 0, 3, b.h);
+  }else{
+    var g = ctx.createLinearGradient(0,0,0,b.h);
+    g.addColorStop(0,"#c07a4c"); g.addColorStop(1,"#8e4f2b");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,b.w,b.h);
+    ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(0.5,0.5,b.w-1,b.h-1);
+  }
+  ctx.restore();
+}
+
+/* ============ VÝSLEDKY ============ */
+function showResults(reason){
+  var f = FAKTY[rand(FAKTY.length)];
+  var pct = bricks>0 ? Math.round(100*(1 - Math.min(1, badMerges/Math.max(1,bricks*2)))) : 0;
+  var verdict = bricks===0
+    ? "Dnes žiadna tehla. Skús to znova — hlina + voda, potom slama."
+    : (badMerges<=1
+        ? "Čistá práca — každá tehla drží."
+        : "Zopár tehál prasklo, lebo zmes bola zlá.");
+  $("panel").innerHTML =
+    '<h2>'+(reason||"Koniec")+'</h2>'+
+    '<div class="sub">Tvoja dielnička za 60 sekúnd</div>'+
+    '<div class="kv"><span>Skóre</span><b>'+score+'</b></div>'+
+    '<div class="kv"><span>Vypálené tehly</span><b>'+bricks+'</b></div>'+
+    '<div class="kv"><span>Zlé zmesi</span><b>'+badMerges+'</b></div>'+
+    '<div class="kv"><span>Rekord</span><b>'+best+'</b></div>'+
+    '<div class="card"><span class="t">Prečo to takto dopadlo</span>'+verdict+' Vypáliť sa dá len to, čo má správny pomer hlíny, vody a slamy.</div>'+
+    '<div class="card"><span class="t">Fakt z fyziky</span>'+f+'</div>'+
+    '<button class="big" id="again">Hrať znova</button>';
+  $("overlay").classList.remove("hidden");
+  $("again").onclick = function(){ initAudio(); startRound(); };
+}
+
+/* ============ ÚVOD ============ */
+function showIntro(){
+  best = Number(localStorage.getItem("dielnicka_best")||0);
+  $("panel").innerHTML =
+    '<h1>🧱 Dielnička</h1>'+
+    '<div class="sub">Vyrob tehlu. Fyzika rozhodne, či drží.</div>'+
+    '<ul class="rules">'+
+      '<li>Ťukni na vec, potom na druhú — spoja sa.</li>'+
+      '<li>🟤 hlína + 💧 voda = 🟫 blato</li>'+
+      '<li>🟫 blato + 🌾 slama = 🟠 cesto</li>'+
+      '<li>Ťukni na 🟠 cesto — vypáli sa na 🧱 tehlu (+100).</li>'+
+      '<li>Zlá zmes = odpad, ktorý ti zapcháva plochu.</li>'+
+    '</ul>'+
+    '<div class="card"><span class="t">Pravidlo hry</span>O víťazstve rozhoduje <b>recept</b>, nie náhoda. Fyzika na konci je len ukážka toho, čo si naozaj poskladal.</div>'+
+    '<button class="big" id="play">Začať (60 sekúnd)</button>';
+  $("overlay").classList.remove("hidden");
+  $("play").onclick = function(){ initAudio(); startRound(); };
+}
+
+/* ============ OVLÁDANIE ============ */
+boardEl.addEventListener("click", function(e){
+  var el = e.target.closest(".cell");
+  if(el) tap(Number(el.dataset.i));
+});
+boardEl.addEventListener("pointerdown", function(e){
+  e.preventDefault();
+});
+$("mute").addEventListener("click", function(){
+  muted = !muted;
+  $("mute").textContent = muted ? "🔇" : "🔈";
+});
+
+/* ladenie / testovanie */
+window.DIELNICKA = {
+  get: function(){ return {cells:cells, score:score, bricks:bricks, badMerges:badMerges, timeLeft:timeLeft, running:running}; },
+  tap: function(i){ tap(i); },
+  set: function(i,v){ cells[i]=v; render(); },
+  start: function(){ initAudio(); startRound(); },
+  end: function(){ endRound("test"); }
+};
+
+/* štart */
+cells = new Array(CELLS).fill(null); score=0; bricks=0; badMerges=0; timeLeft=ROUND; running=false;
+best = Number(localStorage.getItem("dielnicka_best")||0);
+$("best").textContent = best;
+render();
+showIntro();
+
+})();
+</script>
+</body>
+</html>
