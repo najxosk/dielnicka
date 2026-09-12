@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dielnička</title>
+<title>Little Alchemist</title>
 <style>
   :root{
     --bg:#1a1310; --panel:#2e211a; --line:#4a352a; --sand:#e8d5b7;
@@ -103,12 +103,27 @@
   .t-odpad{background:linear-gradient(180deg,#6d6a66,#46433f); color:#ded8d2;}
   .t-odpad span{color:rgba(255,255,255,.62);}
 
-  #hint{font-size:11px; color:#8f7c6b; text-align:center; line-height:1.4;}
+  #hintLine{font-size:11px; color:#8f7c6b; text-align:center; line-height:1.4;}
+  /* výber kola a jazyka */
+  .lvlgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:10px 0 4px;}
+  .lvlpick{background:linear-gradient(180deg,#3b2b20,#2c2018); border:1px solid var(--line);
+    border-radius:10px; color:var(--text); padding:8px 4px; cursor:pointer; font-size:11px;
+    display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1.2;}
+  .lvlpick b{font-size:13px; color:var(--fire);}
+  .lvlpick span{font-size:9.5px; color:#b9a795; text-align:center;}
+  .lvlpick:active{background:#4a3527;}
+  .langrow{display:flex; gap:8px; margin:4px 0 12px;}
+  .langbtn{flex:1; background:linear-gradient(180deg,#3b2b20,#2c2018); border:1px solid var(--line);
+    border-radius:10px; color:var(--text); padding:9px 6px; cursor:pointer; font-size:13px;}
+  .langbtn.on{border-color:var(--fire); background:linear-gradient(180deg,#5a3a24,#40291a); color:#fff;}
+  .langbtn:active{background:#4a3527;}
+  .seclabel{font-size:10px; letter-spacing:1.3px; text-transform:uppercase; color:var(--fire);
+    display:block; margin:14px 0 2px;}
 
   #overlay{position:fixed; inset:0; background:rgba(12,8,6,.88); backdrop-filter:blur(3px);
-    display:flex; align-items:center; justify-content:center; padding:14px; z-index:20;}
+    display:block; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px; z-index:20;}
   #overlay.hidden{display:none;}
-  .panel{width:100%; max-width:440px; max-height:94vh; overflow:auto;
+  .panel{width:100%; max-width:440px; margin:6px auto;
     background:linear-gradient(180deg,#33241c,#261a14); border:1px solid var(--line);
     border-radius:16px; padding:18px; box-shadow:0 18px 50px rgba(0,0,0,.6);}
   .panel h1{margin:0 0 4px; font-size:22px;}
@@ -152,13 +167,14 @@
 <div id="app">
   <div id="hud">
     <div id="hudTop">
-      <div class="hud-item"><span class="lbl">Čas</span><b id="time">90</b></div>
-      <div class="hud-item"><span class="lbl">Skóre</span><b id="score">0</b></div>
-      <div class="hud-item"><span class="lbl">Rekord</span><b id="best">0</b></div>
+      <div class="hud-item"><span class="lbl" id="lblTime">Čas</span><b id="time">90</b></div>
+      <div class="hud-item"><span class="lbl" id="lblScore">Skóre</span><b id="score">0</b></div>
+      <div class="hud-item"><span class="lbl" id="lblBest">Rekord</span><b id="best">0</b></div>
     </div>
     <div id="hudBottom">
-      <span class="lvlchip" id="lvlchip">Kolo 1/6 · dnes</span>
+      <span class="lvlchip" id="lvlchip">Kolo 1/6</span>
       <button class="iconbtn" id="hint" title="Nápoveda (stojí 40 bodov)">💡</button>
+      <button class="iconbtn" id="undo" title="Oprava">↶2</button>
       <button class="iconbtn" id="book" title="Receptár">📖</button>
       <button class="iconbtn" id="restart" title="Reštart kola">↺</button>
       <button class="iconbtn" id="mute" title="Zvuk">🔈</button>
@@ -174,7 +190,7 @@
   </div>
   <div id="toast">Ťukni na jednu vec, potom na druhú — spoja sa.</div>
   <div id="board"></div>
-  <div id="hint">Číslo na surovine je jej <b>kvalita</b>. Čím čistejšia surovina, tým lepší výsledok.</div>
+  <div id="hintLine">Číslo na surovine je jej <b>kvalita</b>. Čím čistejšia surovina, tým lepší výsledok.</div>
 </div>
 <div id="overlay"><div class="panel" id="panel"></div></div>
 <canvas id="fx"></canvas>
@@ -397,17 +413,312 @@ var ZLE = {
   "zasyp+zasyp":"Zásyp treba vypáliť v peci.","zasyp+piesok":"Piesok by pec len upchal.",
   "zasyp+voda":"Vodu do pece nikdy — pec by praskla.","zasyp+kamen":"Kamienok do pece nepatrí."
 };
+
+/* ================= ENGLISH (Little Alchemist) =================
+   Anglické texty. Kľúče sú rovnaké ako v slovenskej časti,
+   takže sa len vymenia — kód zostáva jeden. */
+var ING_EN = {
+  hlina:"clay", voda:"water", slama:"straw", piesok:"sand", popol:"potash", kamen:"pebble",
+  vapenec:"limestone", cement:"cement", uhlie:"coal", cin:"tin", medruda:"copper ore", zelruda:"iron ore",
+  blato:"mud", cesto:"adobe", kasa:"slurry", malta:"mortar", zasypcu:"Cu charge", zasypfe:"Fe charge",
+  beton:"concrete", zmes:"glass batch", sklovina:"frit",
+  vapnop:"quicklime", vapnoh:"slaked lime", med:"copper", bronz:"bronze", zelezo:"iron", ocel:"steel",
+  tehla:"brick", betonhotovy:"concrete", sklo:"glass", odpad:"dud"
+};
+
+var LEVELS_EN = [
+  { nazov:"Brick", hotovo:"Brick is done",
+    kroky:["Make mud — clay + water","Add straw to make adobe","Tap the adobe to fire a brick"],
+    popis:"A brick is only as good as the clay you use. Quality carries through the whole process.",
+    fakt:"Brick = clay + water + straw, fired at about 1000 °C. Straw is the reinforcement, water makes the clay workable." },
+  { nazov:"Concrete", hotovo:"Concrete is done",
+    kroky:["Cement + water = slurry","Slurry + sand = mortar","Mortar + pebble = concrete","Tap the concrete and let it cure"],
+    popis:"Concrete is cement, sand and pebble. Every part has to be good, or the concrete cracks.",
+    fakt:"Concrete hardens chemically — the cement reacts with water for weeks. It doesn't just dry out." },
+  { nazov:"Glass", hotovo:"Glass is done",
+    kroky:["Sand + potash = glass batch","Add limestone — you get frit","Tap the frit and fire glass"],
+    popis:"Glass is three things: sand (the glass itself), potash (lowers the melting point) and limestone (so it lasts).",
+    fakt:"Without limestone, glass would dissolve in water — you could never put it in a window." },
+  { nazov:"Lime and mortar", hotovo:"Mortar is done",
+    kroky:["Tap the limestone and burn it into quicklime","Quicklime + water = slaked lime","Slaked lime + sand = mortar"],
+    popis:"Lime is the base of old buildings. It is burned from limestone and slaked with water.",
+    fakt:"Slaking lime heats up past 100 °C — the water in it boils. That is why it is done carefully and in small amounts." },
+  { nazov:"Bronze", hotovo:"Bronze is done",
+    kroky:["Copper ore + coal = furnace charge","Tap the charge and smelt copper","Copper + tin = bronze"],
+    popis:"You cannot pull metal out of ore just like that — the coal in the furnace takes the oxygen away and leaves pure metal.",
+    fakt:"Bronze is harder than copper or tin alone. That is why tools were made from it — the whole Bronze Age." },
+  { nazov:"Steel", hotovo:"Steel is done",
+    kroky:["Iron ore + coal = furnace charge","Tap the charge and smelt iron","Iron + coal = steel"],
+    popis:"Iron melts far higher than copper. Only tall blast furnaces made iron an everyday metal.",
+    fakt:"Steel = iron + 0.2 to 2 % carbon. More carbon means harder, but more brittle." }
+];
+
+var ZLE_EN = {
+  "hlina+hlina":"Clay alone won't hold without water.","voda+voda":"Water and water build nothing.",
+  "slama+slama":"Straw alone won't hold a shape.","piesok+piesok":"Sand and sand is just more sand.",
+  "popol+popol":"Potash and potash do nothing.","kamen+kamen":"Pebbles don't stick together by themselves.",
+  "cement+cement":"Cement without water never hardens.",
+  "hlina+piesok":"Clay and sand without water just crumble.","hlina+popol":"Clay doesn't hold with potash.",
+  "hlina+kamen":"A pebble won't join clay.","hlina+slama":"Clay and straw without water = dust. Water comes first.",
+  "hlina+cement":"Clay with cement is neither brick nor concrete.",
+  "voda+piesok":"Water and sand is just wet sand.","voda+popol":"Potash just soaks in water.",
+  "voda+kamen":"A pebble only gets wet.","voda+slama":"Water and straw do nothing.",
+  "slama+piesok":"Straw and sand build nothing.","slama+popol":"Straw and potash are nothing.",
+  "slama+kamen":"Straw won't hold a pebble.","slama+cement":"Straw and cement without water won't set.",
+  "piesok+popol":"","piesok+kamen":"Sand and a pebble won't hold without cement.",
+  "piesok+cement":"Cement and sand without water won't set.","popol+kamen":"Potash and a pebble are nothing.",
+  "popol+cement":"Potash ruins the cement mix.","kamen+cement":"A pebble and cement without water do nothing.",
+  "blato+blato":"Mud and mud is just more mud — you need straw.",
+  "blato+piesok":"Mud and sand fall apart.","blato+popol":"Mud doesn't hold with potash.",
+  "blato+kamen":"Mud and a pebble do nothing.","blato+hlina":"Mud with more clay is just thicker mud.",
+  "blato+voda":"Too much water makes mud soupy.","blato+slama":"","blato+cement":"Mud and cement fall apart.",
+  "cesto+blato":"Adobe and mud fall apart.","cesto+hlina":"The adobe already has clay — more breaks it.",
+  "cesto+voda":"Too much water softens the adobe.","cesto+piesok":"Sand weakens the adobe.",
+  "cesto+popol":"Potash spoils the adobe.","cesto+kamen":"A pebble tears the adobe.",
+  "cesto+cement":"Cement spoils the adobe.","cesto+cesto":"Two adobes can't be joined — one has to be fired.",
+  "cesto+slama":"The adobe already has straw — a second dose breaks it.",
+  "kasa+kasa":"Two slurries do nothing.","kasa+cement":"The slurry has cement already — you need sand.",
+  "kasa+voda":"Too much water thins the slurry.","kasa+popol":"Potash spoils the slurry.",
+  "kasa+hlina":"Clay doesn't belong in cement.","kasa+slama":"Straw doesn't belong in slurry.",
+  "malta+malta":"Mortar and mortar do nothing.","malta+voda":"Too much water thins the mortar.",
+  "malta+cement":"The mortar has cement already — you need a pebble.",
+  "beton+beton":"Concrete and concrete do nothing.","beton+cement":"The concrete has cement already.",
+  "zmes+zmes":"The batch has to be fired, not joined.",
+  "zmes+hlina":"Clay doesn't belong in a glass batch — the glass would be cloudy.",
+  "zmes+voda":"No water in a glass batch.",
+  "uhlie+uhlie":"Coal on coal just burns — nothing comes of it.",
+  "uhlie+piesok":"Coal and sand make no glass — potash and limestone are missing.",
+  "uhlie+hlina":"Coal only dirties clay.","uhlie+voda":"Water puts the coal out.",
+  "uhlie+vapenec":"Coal and limestone do nothing without a furnace.",
+  "uhlie+cin":"Coal and tin do nothing — the tin just melts.",
+  "vapenec+vapenec":"Limestone and limestone do nothing without a furnace.",
+  "vapenec+piesok":"Limestone and sand make no mortar without burning and water.",
+  "vapenec+hlina":"Limestone and clay make no brick.","vapenec+cement":"Limestone and cement is not mortar.",
+  "vapenec+kamen":"Limestone and a pebble do nothing.",
+  "cin+cin":"Tin on tin does nothing — bronze needs copper.",
+  "med+med":"Two coppers can't be joined — bronze needs tin.",
+  "med+uhlie":"Copper and coal is not bronze. Bronze = copper + tin.",
+  "med+voda":"Copper only gets wet.","med+kamen":"Copper and a pebble do nothing.",
+  "med+hlina":"Clay and copper do nothing.","med+piesok":"Sand and copper do nothing.",
+  "medruda+medruda":"Two ores without coal won't smelt.",
+  "medruda+cin":"Ore must be smelted with coal first — only then is it metal.",
+  "medruda+piesok":"Sand doesn't belong in a furnace with ore.",
+  "medruda+voda":"Wet ore just steams in the furnace.",
+  "medruda+hlina":"Clay and ore do nothing.","medruda+kamen":"Ore and a pebble do nothing.",
+  "zelruda+zelruda":"Ore won't smelt without coal.",
+  "zelruda+piesok":"Sand and ore do nothing.","zelruda+voda":"Wet ore just steams in the furnace.",
+  "zelruda+hlina":"Clay and ore do nothing.","zelruda+kamen":"Ore and a pebble do nothing.",
+  "zelruda+vapenec":"Ore and limestone do nothing without a furnace.",
+  "zelezo+zelezo":"Iron and iron do nothing — steel needs carbon.",
+  "zelezo+ocel":"The steel is finished already — it can't be joined further.",
+  "zelezo+piesok":"Sand does nothing for iron.","zelezo+voda":"Iron in water just rusts.",
+  "zelezo+hlina":"Clay and iron do nothing.",
+  "ocel+ocel":"Steel and steel do nothing.",
+  "ocel+uhlie":"The steel has carbon already — more would make it brittle.",
+  "vapnop+vapnop":"Two quicklimes do nothing — one has to be slaked with water.",
+  "vapnop+piesok":"Sand goes into slaked lime, not quicklime.",
+  "vapnop+vapnoh":"Quicklime and slaked lime don't mix any more.",
+  "vapnoh+vapnoh":"Two slaked limes can't be joined — you need sand.",
+  "vapnoh+voda":"Water already slaked the lime once.",
+  "vapnoh+kamen":"A pebble belongs in concrete, not in lime.",
+  "sklovina+sklovina":"Frit has to be fired, not joined.","sklovina+piesok":"The frit has sand already.",
+  "zasyp+zasyp":"The charge has to be fired in the furnace.","zasyp+piesok":"Sand would just clog the furnace.",
+  "zasyp+voda":"Never water into a furnace — it would crack.","zasyp+kamen":"A pebble doesn't belong in a furnace."
+};
+
+var RECEPTAR_EN = {
+  "hlina+voda":"Dry clay crumbles. Water turns it into a workable mass that holds its shape.",
+  "blato+slama":"Straw is the reinforcement — it holds the brick together so it doesn't crack while drying. Today we use steel mesh in concrete.",
+  "cesto->tehla":"Firing at about 1000 °C turns clay into ceramic: hard and insoluble in water.",
+  "cement+voda":"Cement hardens chemically with water — tiny crystals grow between the grains and lock them. This is not drying.",
+  "kasa+piesok":"Sand in mortar stops it cracking. Mortar without sand falls apart as it sets.",
+  "kamen+malta":"The pebble is the filler — it holds the volume, reduces shrinkage, and makes concrete stronger and cheaper.",
+  "beton->betonhotovy":"Concrete gains strength for weeks. The first 7 days decide most of its final strength.",
+  "piesok+popol":"Potash from wood ash (potassium carbonate) drops the melting point of sand from about 1700 °C to about 1400 °C.",
+  "vapenec+zmes":"Limestone is the stabiliser — without it, glass would dissolve in water.",
+  "sklovina->sklo":"Glass is melted sand that cooled before crystals could form. That is why it is see-through.",
+  "vapenec->vapnop":"Limestone (CaCO3) breaks down at about 900 °C into quicklime (CaO) and carbon dioxide (CO2).",
+  "vapnop+voda":"Slaking lime is a violent reaction — the mix heats past 100 °C and the water in it boils.",
+  "piesok+vapnoh":"Lime mortar sets in air: it absorbs carbon dioxide and turns back into limestone. That is why it sets slowly, over months.",
+  "medruda+uhlie":"Ore is melted with coal in a furnace. The coal grabs the oxygen and leaves pure metal.",
+  "zasypcu->med":"Copper smelts at about 1100 °C. It is one of the first metals people ever used.",
+  "cin+med":"Bronze is harder than copper or tin alone. That is why tools were made from it — the whole Bronze Age.",
+  "uhlie+zelruda":"In the furnace the coal takes the oxygen from the ore. Iron melts only at about 1538 °C.",
+  "zasypfe->zelezo":"Iron melts at about 1538 °C — that is why blast furnaces were built, some of the biggest structures of the Middle Ages.",
+  "uhlie+zelezo":"Steel = iron + 0.2–2 % carbon. Carbon makes it harder; more carbon means harder but more brittle."
+};
+
+/* ---- rozhranie v dvoch jazykoch ---- */
+var T = {
+  time:{sk:"Čas", en:"Time"}, score:{sk:"Skóre", en:"Score"}, best:{sk:"Rekord", en:"Best"},
+  hintLine:{
+    sk:'Číslo na surovine je jej <b>kvalita</b>. Čím čistejšia surovina, tým lepší výsledok.',
+    en:'The number on a material is its <b>quality</b>. The cleaner the material, the better the result.'},
+  toastStart:{sk:"Ťukni na jednu vec, potom na druhú — spoja sa.",
+    en:"Tap one thing, then another — they join."},
+  goalMake:{sk:"Vyrob: {x}", en:"Make: {x}"},
+  goalLabel:{sk:"CIEĽ", en:"GOAL"}, goalHintWith:{sk:" · nápoveda {n}", en:" · hint {n}"},
+  levelChip:{sk:"Kolo {n}/{m}", en:"Level {n}/{m}"},
+  progress:{sk:"Zatiaľ máš: {x}. Čo s tým ďalej?", en:"So far you have: {x}. What next?"},
+  hintFind:{sk:"Postup (z čoho sa to skladá) si musíš nájsť sám.",
+    en:"You have to work out the recipe yourself."},
+  hintPrefix:{sk:"Nápoveda {n}: {x}", en:"Hint {n}: {x}"},
+  hintNone:{sk:"Ďalšiu nápovedu už nemám — celý postup ti hovorím.",
+    en:"No more hints — I have told you the whole process."},
+  hintToast:{sk:"Nápoveda {n} (−40 bodov): {x}", en:"Hint {n} (−40 points): {x}"},
+  tapNotUsable:{sk:"Toto je nepodarok — nedá sa použiť.", en:"That is a dud — it cannot be used."},
+  tapSelectedFire:{sk:"Vybraté — ťukni naň ešte raz a spustíš pec (🔥).",
+    en:"Selected — tap it once more to fire it (🔥)."},
+  qualityWord:{sk:"kvalita", en:"quality"}, newWord:{sk:"📖 nové!", en:"📖 new!"},
+  fireReady:{sk:"{x} je na svete · kvalita {q} %", en:"{x} is ready · quality {q} %"},
+  cured:{sk:"Betón vytvrdol — kvalita {q} %.", en:"The concrete cured — quality {q} %."},
+  badSurvive:{sk:"Zlá zmes: {x} = nepodarok. {p} O dve suroviny menej — ešte to vieš dokončiť.",
+    en:"Bad mix: {x} = a dud. {p} Two ingredients fewer — you can still finish this."},
+  badDoomed:{sk:"Zlá zmes: {x} — a na cieľ už materiál nemáš.",
+    en:"Bad mix: {x} — and you no longer have the materials for the goal."},
+  newAttempt:{sk:"Nový pokus — stôl je nasypaný odznova.", en:"New attempt — the table has been refilled."},
+  startToast:{sk:"Vyrob {x}. Z čoho? To si musíš prísť sám.",
+    en:"Make {x}. From what? You have to work that out yourself."},
+  dontHold:{sk:"Toto spolu nedrží.", en:"These two don't hold together."},
+  andHold:{sk:"{a} a {b} spolu nedržia.", en:"{a} and {b} don't hold together."},
+  winSub:{sk:"Kolo {n} · pokusov: {a} · dnes pre všetkých rovnaký stôl",
+    en:"Level {n} · attempts: {a} · same table for everyone today"},
+  quality:{sk:"Kvalita", en:"Quality"}, forQuality:{sk:"Za kvalitu", en:"For quality"},
+  timeBonus:{sk:"Zvyšný čas ({t} s × 2)", en:"Time left ({t} s × 2)"},
+  restartPenalty:{sk:"Za {n}× reštart", en:"For {n}× restart"},
+  hintsPenalty:{sk:"Nápovedy ({n}× 40)", en:"Hints ({n}× 40)"},
+  undosPenalty:{sk:"Opravy ({n}× 60)", en:"Fixes ({n}× 60)"},
+  badRow:{sk:"Zlé zmesi ({n}× 15)", en:"Bad mixes ({n}× 15)"},
+  total:{sk:"Skóre", en:"Score"},
+  whyTitle:{sk:"Prečo práve takto", en:"Why it turned out this way"},
+  why3:{sk:"Pevný kus — materiál bol čistý.", en:"A solid piece — the material was clean."},
+  why2:{sk:"Dobrý kus, ale materiál mohol byť lepší.", en:"A good piece, but the material could be better."},
+  why1:{sk:"Drobí sa. Použil si slabšiu surovinu.", en:"It crumbles. You used weaker material."},
+  why0:{sk:"Rozpadol sa — materiál bol príliš slabý.", en:"It fell apart — the material was too weak."},
+  hintNote:{sk:" Použil si nápovedu, takže najviac dve hviezdy.", en:" You used a hint, so two stars at most."},
+  undoNote:{sk:" Opravil si si chybu, takže najviac dve hviezdy.", en:" You fixed a mistake, so two stars at most."},
+  bookLine:{sk:"Objavené postupy: <b>{a}/{b}</b>", en:"Discovered recipes: <b>{a}/{b}</b>"},
+  nextLevel:{sk:"Ďalšie kolo →", en:"Next level →"}, tryAgain:{sk:"Skúsiť znova", en:"Try again"},
+  expired:{sk:"⏱ Čas vypršal", en:"⏱ Time's up"}, lostTitle:{sk:"✖ Kolo je stratené", en:"✖ Level lost"},
+  why:{sk:"Prečo", en:"Why"}, badStep:{sk:"Zlý postup", en:"Wrong step"}, advice:{sk:"Rada", en:"Advice"},
+  expiredBody:{sk:"Čas vypršal, kým si prišiel na to, z čoho sa <b>{x}</b> skladá.",
+    en:"Time ran out before you worked out what <b>{x}</b> is made from."},
+  expiredAdvice:{sk:"Na stole je viac surovín, než treba. Najprv si v hlave povedz, čo všetko by <b>{x}</b> potreboval.",
+    en:"There are more materials on the table than you need. First work out in your head what <b>{x}</b> would need."},
+  lostBody:{sk:"Spojil si <b>{x}</b> — vznikol nepodarok a tie dve suroviny sú preč. Na <b>{z}</b> už na stole nemáš čo použiť, takže kolo sa dokončiť nedá.",
+    en:"You joined <b>{x}</b> — a dud, and those two ingredients are gone. You have nothing left for <b>{z}</b>, so this level cannot be finished."},
+  lostAdvice:{sk:"Použi <b>↶ Oprava</b> a vrátiš si posledný ťah — alebo 💡 nápovedu a ukážem ti ďalší krok.",
+    en:"Use <b>↶ Fix</b> to take back your last move — or 💡 a hint and I will show you the next step."},
+  retry:{sk:"Spustiť kolo znova", en:"Restart the level"},
+  introSub:{sk:"6 kôl: tehla, betón, sklo, vápno, bronz a oceľ.",
+    en:"6 levels: brick, concrete, glass, lime, bronze and steel."},
+  rules:{sk:[
+      "Zadanie ti povie len <b>čo vyrobiť</b>. <b>Ako</b> — to si musíš prísť sám.",
+      "Na stole máš suroviny. <b>Nie všetky potrebuješ</b> a niektoré vyzerajú podobne.",
+      "Každá surovina má <b>kvalitu v percentách</b>. Z dobrého materiálu je dobrá vec.",
+      "<b>Zlá zmes zožerie dve suroviny.</b> Kým sa cieľ dá vyrobiť, hra pokračuje — a keď sa pomýliš, vrátiš ťah tlačidlom ↶.",
+      "💡 <b>Nápoveda</b> ti poradí ďalší krok, ale stojí 40 bodov a uberie hviezdu.",
+      "Postupy sú <b>zo skutočnej fyziky a chémie</b> a platia všade rovnako.",
+      "Stôl je <b>každý deň iný a pre všetkých rovnaký</b> — môžeš súperiť s kamarátom."
+    ], en:[
+      "The task only tells you <b>what to make</b>. <b>How</b> — you have to work out yourself.",
+      "You have materials on the table. <b>You don't need all of them</b> and some look alike.",
+      "Every material has a <b>quality in percent</b>. Good material makes a good thing.",
+      "<b>A bad mix eats two ingredients.</b> While the goal can still be made the game goes on — and if you slip up, ↶ takes your move back.",
+      "💡 <b>A hint</b> gives you the next step, but costs 40 points and one star.",
+      "The recipes come from <b>real physics and chemistry</b> and work the same everywhere.",
+      "The table is <b>different every day and the same for everyone</b> — compete with a friend."
+    ]},
+  play:{sk:"Začať hru", en:"Start the game"},
+  chooseLevel:{sk:"Alebo si vyber kolo", en:"Or pick a level"},
+  playLevel:{sk:"Hrať kolo", en:"Play level"},
+  bookTitle:{sk:"📖 Receptár", en:"📖 Recipe book"},
+  bookDiscovered:{sk:"Objavené: {a} / {b}", en:"Discovered: {a} / {b}"},
+  bookLocked:{sk:"Zatiaľ neobjavené", en:"Not discovered yet"},
+  bookLockedHint:{sk:"Vyskúšaj niečo nové na stole.", en:"Try something new on the table."},
+  bookBack:{sk:"Späť do hry", en:"Back to the game"},
+  undoTitle:{sk:"Oprava — vráti posledný ťah (−60 bodov, 2× za kolo)",
+    en:"Fix — takes back your last move (−60 points, 2× per level)"},
+  undoDone:{sk:"Posledný ťah vrátený (−60). Zvyšné opravy: {n}",
+    en:"Last move taken back (−60). Fixes left: {n}"},
+  undoNone:{sk:"Opravy už nemáš — dve na kolo stačia.", en:"No fixes left — two per level is enough."},
+  undoTime:{sk:"Pridal som ti 20 sekúnd.", en:"I gave you 20 extra seconds."},
+  shareFooter:{sk:"Zvládneš lepšie?", en:"Can you do better?"},
+  shareCopied:{sk:"Skopírované — pošli to kamarátovi.", en:"Copied — send it to a friend."},
+  shareBox:{sk:"Text je v poli nižšie.", en:"The text is in the box below."},
+  receptarBtn:{sk:"📖 Receptár", en:"📖 Recipe book"},
+  share:{sk:"📤 Zdieľať", en:"📤 Share"},
+  langLabel:{sk:"Jazyk", en:"Language"}
+};
+function t(k, v){
+  var e = T[k]; if(!e) return k;
+  var s = (lang === "en" ? e.en : e.sk);
+  if(typeof s !== "string") return s;
+  if(v) for(var p in v) s = s.split("{"+p+"}").join(v[p]);
+  return s;
+}
+
+/* ================= JAZYK ================= */
+var lang = "sk";
+var ING_SK = {}, ZLE_SK = {}, REC_SK = {}, LVL_SK = [];
+function zapamatajSlovencinu(){
+  var k, i;
+  for(k in ING) ING_SK[k] = ING[k].label;
+  for(k in ZLE) ZLE_SK[k] = ZLE[k];
+  for(k in RECEPTAR) REC_SK[k] = RECEPTAR[k].text;
+  for(i=0;i<LEVELS.length;i++){
+    var L = LEVELS[i];
+    LVL_SK[i] = {nazov:L.nazov, hotovo:L.hotovo, popis:L.popis, fakt:L.fakt, kroky:L.kroky.slice()};
+  }
+}
+function setLang(l){
+  lang = (l === "en") ? "en" : "sk";
+  lsSet("dielnicka_jazyk", lang);
+  var k, i;
+  for(k in ING) ING[k].label = (lang === "en" && ING_EN[k]) ? ING_EN[k] : ING_SK[k];
+  for(k in ZLE) ZLE[k] = (lang === "en" && ZLE_EN[k] != null) ? ZLE_EN[k] : ZLE_SK[k];
+  for(k in RECEPTAR) RECEPTAR[k].text = (lang === "en" && RECEPTAR_EN[k]) ? RECEPTAR_EN[k] : REC_SK[k];
+  for(i=0;i<LEVELS.length;i++){
+    var L = LEVELS[i], E = LEVELS_EN[i], S = LVL_SK[i];
+    if(!L || !S) continue;
+    L.nazov  = (lang === "en" && E) ? E.nazov  : S.nazov;
+    L.hotovo = (lang === "en" && E) ? E.hotovo : S.hotovo;
+    L.popis  = (lang === "en" && E) ? E.popis  : S.popis;
+    L.fakt   = (lang === "en" && E) ? E.fakt   : S.fakt;
+    L.kroky  = (lang === "en" && E) ? E.kroky.slice() : S.kroky.slice();
+  }
+  nastavJazyk();
+  if(lvl){ paint(); hud(); }
+}
+
 function zlaVeta(k){
   var v = ZLE[k];
   if(v) return v;
   var p = k.split("+");
-  if(!ING[p[0]] || !ING[p[1]]) return "Toto spolu nedrží.";
-  return ING[p[0]].label + " a " + ING[p[1]].label + " spolu nedržia.";
+  if(!ING[p[0]] || !ING[p[1]]) return t("dontHold");
+  return t("andHold", {a:ING[p[0]].label, b:ING[p[1]].label});
+}
+/* nastaví všetky nápisy v rozhraní podľa zvoleného jazyka */
+function nastavJazyk(){
+  $("lblTime").textContent = t("time");
+  $("lblScore").textContent = t("score");
+  $("lblBest").textContent = t("best");
+  $("hintLine").innerHTML = t("hintLine");
+  document.documentElement.lang = lang;
+  document.title = "Little Alchemist";
+  if($("hint")) $("hint").title = (lang === "en") ? "Hint (−40 points)" : "Nápoveda (−40 bodov)";
+  if($("undo")) $("undo").title = t("undoTitle");
+  if($("book")) $("book").title = t("bookTitle");
+  if($("restart")) $("restart").title = (lang === "en") ? "Restart the level" : "Reštart kola";
+  if($("mute"))  $("mute").title  = (lang === "en") ? "Sound" : "Zvuk";
+  if($("toast")) $("toast").textContent = t("toastStart");
 }
 
 /* ================= STAV ================= */
 var lvl, tiles, selected, running, lost, solved, timeLeft, levelScore, attempt, tickTimer;
 var badMerges = 0, hints = 0, revealed = [];
+/* oprava (vrátenie posledného ťahu) — hráč sa nemusí báť pomýliť */
+var history = [], undosUsed = 0, UNDO_MAX = 2, UNDO_COST = 60;
 var score = 0, best = 0, muted = false, stars = 0, finalQ = 0;
 var $ = function(id){ return document.getElementById(id); };
 var boardEl = $("board"), toastEl = $("toast");
@@ -499,7 +810,7 @@ function buildBoard(n){
     boardEl.appendChild(cell); cellEls.push(cell); tileEls.push(null);
   }
 }
-function tileKey(t){ return t ? (t.type + "|" + (t.q==null?"-":t.q)) : null; }
+function tileKey(t){ return t ? (t.type + "|" + (t.q==null?"-":t.q) + "|" + lang) : null; }
 function paint(){
   for(var i=0;i<boardSize;i++){
     var t = tiles[i], cell = cellEls[i], tile = tileEls[i];
@@ -533,16 +844,23 @@ function hud(){
   $("best").textContent = best;
   $("time").textContent = timeLeft;
   $("time").className = (timeLeft<=10 ? "low" : "");
+  hudOprava();
+}
+function hudOprava(){
+  var b = $("undo"); if(!b) return;
+  var kolko = UNDO_MAX - undosUsed;
+  b.textContent = "↶" + (kolko > 0 ? kolko : "");
+  b.style.opacity = (kolko > 0 && history.length) ? "1" : ".45";
 }
 function goal(){
   $("goalEmoji").textContent = lvl.cielEmoji;
-  $("goalName").textContent = "Vyrob: " + ING[lvl.ciel].label;
+  $("goalName").textContent = t("goalMake", {x: ING[lvl.ciel].label});
   var txt;
-  if(hints > 0 && lvl.kroky[hints-1]) txt = "Nápoveda " + hints + ": " + lvl.kroky[hints-1];
-  else txt = progressTxt() || "Postup (z čoho sa to skladá) si musíš nájsť sám.";
+  if(hints > 0 && lvl.kroky[hints-1]) txt = t("hintPrefix", {n:hints, x:lvl.kroky[hints-1]});
+  else txt = progressTxt() || t("hintFind");
   $("goalHint").textContent = txt;
-  $("goalStep").textContent = "CIEĽ" + (hints ? " · nápoveda " + hints : "");
-  $("lvlchip").textContent = "Kolo " + lvl.cislo + "/" + LEVELS.length + " · dnes";
+  $("goalStep").textContent = t("goalLabel") + (hints ? t("goalHintWith", {n:hints}) : "");
+  $("lvlchip").textContent = t("levelChip", {n:lvl.cislo, m:LEVELS.length});
 }
 /* čo už hráč na stole vyrobil — bez toho, aby sme mu prezradili recept */
 function progressTxt(){
@@ -550,7 +868,7 @@ function progressTxt(){
   for(var i=0;i<lvl.poradie.length-1;i++){
     for(var j=0;j<tiles.length;j++) if(tiles[j] && tiles[j].type === lvl.poradie[i]) last = lvl.poradie[i];
   }
-  return last ? "Zatiaľ máš: " + ING[last].label + ". Čo s tým ďalej?" : "";
+  return last ? t("progress", {x: ING[last].label}) : "";
 }
 function render(){ paint(); hud(); goal(); }
 
@@ -566,9 +884,9 @@ function kvalita(vstup){
 /* ================= ŤUKNUTIE ================= */
 function tap(i){
   if(!running) return;
-  var t = tiles[i];
+  var tile = tiles[i];
 
-  if(!t){
+  if(!tile){
     if(selected!==null && tiles[selected]){
       tiles[i] = tiles[selected]; tiles[selected] = null; selected = null;
       sfx(430,0.05,"sine",0.05); paint(); return;
@@ -576,29 +894,52 @@ function tap(i){
     selected = null; paint(); return;
   }
 
-  if(t.type === "odpad"){ toast("Toto je nepodarok — nedá sa použiť.", "bad"); return; }
+  if(tile.type === "odpad"){ toast(t("tapNotUsable"), "bad"); return; }
 
   if(selected === null){
     selected = i; paint();
-    if(FIRE[t.type]) toast("Vybraté — ťukni naň ešte raz a spustíš pec (🔥).", "");
+    if(FIRE[tile.type]) toast(t("tapSelectedFire"), "");
     return;
   }
 
   if(selected === i){
-    if(FIRE[t.type]) fire(i);
+    if(FIRE[tile.type]) fire(i);
     else { selected = null; paint(); }
     return;
   }
 
   /* máme vybraté jednu vec a ťukáme na druhú */
-  var maRecept = !!RECIPES[key(tiles[selected].type, t.type)];
-  if(!maRecept && FIRE[t.type]){
+  var maRecept = !!RECIPES[key(tiles[selected].type, tile.type)];
+  if(!maRecept && FIRE[tile.type]){
     /* na vypáliteľnú vec sa neútočí — radšej ju len vyberieme */
     selected = i; paint();
-    toast("Vybraté — ťukni naň ešte raz a spustíš pec (🔥).", "");
+    toast(t("tapSelectedFire"), "");
     return;
   }
   combine(selected, i);
+}
+/* uloží stav pred ťahom, aby sa dal vrátiť */
+function odtlacok(){
+  if(!running) return;
+  var kop = [], i;
+  for(i=0;i<tiles.length;i++) kop.push(tiles[i] ? {type:tiles[i].type, q:tiles[i].q} : null);
+  history.push({tiles:kop, levelScore:levelScore});
+  if(history.length > 24) history.shift();
+}
+function zvysOprav(){ return UNDO_MAX - undosUsed; }
+function undo(){
+  if(!zvysOprav() || !history.length){ toast(t("undoNone"), ""); return; }
+  var h = history.pop(), i;
+  tiles = [];
+  for(i=0;i<h.tiles.length;i++) tiles.push(h.tiles[i] ? {type:h.tiles[i].type, q:h.tiles[i].q} : null);
+  levelScore = h.levelScore - UNDO_COST;
+  undosUsed++;
+  selected = null; lost = false; solved = false; running = true;
+  $("overlay").classList.add("hidden");
+  if(timeLeft <= 0){ timeLeft = 20; toast(t("undoTime"), ""); }
+  else toast(t("undoDone", {n: zvysOprav()}), "good");
+  spustiCas();
+  paint(); hud(); goal();
 }
 
 function combine(a,b){
@@ -607,6 +948,7 @@ function combine(a,b){
   if(!x || !y){ paint(); return; }
   var k = key(x.type, y.type);
   var res = RECIPES[k];
+  odtlacok();
 
   if(res){
     var q = kvalita([x,y]);
@@ -615,13 +957,13 @@ function combine(a,b){
     levelScore += 25;
     sfxMerge();
     toast(ING[x.type].label + " + " + ING[y.type].label + " = " + ING[res].label +
-          (q!=null ? "  · kvalita " + q + " %" : "") + (jeNovy ? "  📖 nové!" : ""), "good");
+          (q!=null ? "  · " + t("qualityWord") + " " + q + " %" : "") + (jeNovy ? "  " + t("newWord") : ""), "good");
     paint(); bump(a);
     if(res === lvl.ciel){ completeLevel(res, q); return; }
     goal();
     return;
   }
-
+  hudOprava();
   tiles[a] = {type:"odpad"}; tiles[b] = null;
   badMerge(k, x, y);
 }
@@ -661,12 +1003,12 @@ function badMerge(k, x, y){
 
   if(daSaDokoncit()){
     /* o dve suroviny menej, ale cieľ sa ešte dá vyrobiť — hra pokračuje */
-    toast("Zlá zmes: " + kto + " = nepodarok. " + popis + " O dve suroviny menej — ešte to vieš dokončiť.", "bad");
+    toast(t("badSurvive", {x:kto, p:popis}), "bad");
     goal();
   }else{
     lost = true; running = false;
     clearInterval(tickTimer);
-    toast("Zlá zmes: " + kto + " — a na cieľ už materiál nemáš.", "bad");
+    toast(t("badDoomed", {x:kto}), "bad");
     setTimeout(function(){ showLost(x.type, y.type, popis); }, 900);
   }
 }
@@ -678,9 +1020,10 @@ function completeLevel(outType, q){
   finalQ = (q!=null ? q : 100);
   stars = starsFor(finalQ);
   if(hints > 0 && stars > 2) stars = 2;
+  if(undosUsed > 0 && stars > 2) stars = 2;
   solved = true; running = false;
   clearInterval(tickTimer);
-  levelScore += finalQ*10 + timeLeft*2 - (attempt-1)*50 - hints*40;
+  levelScore += finalQ*10 + timeLeft*2 - (attempt-1)*50 - hints*40 - undosUsed*UNDO_COST;
   if(levelScore < 50) levelScore = 50;
   score = levelScore;
   saveBest(score);
@@ -693,16 +1036,17 @@ function completeLevel(outType, q){
 
 function fire(i){
   if(!running) return;
-  var t = tiles[i];
-  var hotovo = FIRE[t.type];
+  var tile = tiles[i];
+  var hotovo = FIRE[tile.type];
   if(!hotovo) return;
   selected = null;                 /* nič nesmie zostať vybraté */
-  var q = (t.q!=null ? t.q : 100);
+  odtlacok();
+  var q = (tile.q!=null ? tile.q : 100);
   var outType = (hotovo === "betonhotovy") ? "beton" : hotovo;
 
-  recUnlock(t.type + "->" + hotovo);
-  if(t.type === "beton") toast("Betón vytvrdol — kvalita " + q + " %.", "good");
-  else toast(ING[outType].label + " je na svete · kvalita " + q + " %", "good");
+  recUnlock(tile.type + "->" + hotovo);
+  if(tile.type === "beton") toast(t("cured", {q:q}), "good");
+  else toast(t("fireReady", {x:ING[outType].label, q:q}), "good");
 
   if(hotovo === lvl.ciel){
     /* vznikol hotový výrobok kola */
@@ -735,10 +1079,14 @@ function startLevel(){
   buildBoard(tiles.length);
   selected = null; lost = false; solved = false; running = true;
   levelScore = 0; timeLeft = lvl.cas; hints = 0; revealed = []; badMerges = 0;
+  history = []; undosUsed = 0;
   score = 0; best = loadBest();
-  toast("Vyrob " + lvl.ciel + ". Z čoho? To si musíš prísť sám.", "");
+  toast(t("startToast", {x: ING[lvl.ciel].label}), "");
   render();
   $("overlay").classList.add("hidden");
+  spustiCas();
+}
+function spustiCas(){
   clearInterval(tickTimer);
   tickTimer = setInterval(function(){
     if(!running) return;
@@ -749,7 +1097,7 @@ function startLevel(){
 function restartLevel(voluntary){
   attempt++;
   startLevel();
-  if(voluntary) toast("Nový pokus — stôl je nasypaný odznova.", "");
+  if(voluntary) toast(t("newAttempt"), "");
 }
 function timeUp(){
   running = false; lost = true;
@@ -793,9 +1141,18 @@ function finalScene(outType, q, done){
 /* ================= ZDIEĽANIE (denná zákazka) ================= */
 function shareText(){
   var hodn = "★".repeat(stars) + "☆".repeat(3-stars);
-  return "Dielnička #" + Math.floor(dayNumber()%1000) + " — " + lvl.nazov +
-    "\nKvalita " + finalQ + " %  " + hodn + "\nSkóre " + score + " · pokusov " + attempt +
-    "\nZvládneš lepšie?";
+  var H = [];
+  H.push("Little Alchemist #" + Math.floor(dayNumber()%1000) + " — " + lvl.nazov);
+  if(lang === "en"){
+    H.push("Quality " + finalQ + " %  " + hodn);
+    H.push("Score " + score + " · attempts " + attempt);
+    H.push(t("shareFooter"));
+  }else{
+    H.push("Kvalita " + finalQ + " %  " + hodn);
+    H.push("Skóre " + score + " · pokusov " + attempt);
+    H.push(t("shareFooter"));
+  }
+  return H.join("\n");
 }
 function share(){
   var text = shareText();
@@ -804,8 +1161,8 @@ function share(){
     return;
   }
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){ toast("Skopírované — pošli to kamarátovi.", "good"); },
-      function(){ toast("Text je v poli nižšie.", ""); showShareBox(text); });
+    navigator.clipboard.writeText(text).then(function(){ toast(t("shareCopied"), "good"); },
+      function(){ toast(t("shareBox"), ""); showShareBox(text); });
     return;
   }
   showShareBox(text);
@@ -816,72 +1173,81 @@ function showShareBox(text){
   var p = $("panel"); p.appendChild(box); box.select();
 }
 
+/* ================= PREJDEME NA ĎALŠIE KOLO ================= */
+function nextLevel(){
+  if(lvl.cislo < LEVELS.length){
+    setUnlocked(lvl.cislo+1);
+    lvl = LEVELS[lvl.cislo];
+    attempt = 1; initAudio(); startLevel();
+  }else{
+    attempt = 1; initAudio(); startLevel();
+  }
+}
+
 /* ================= OBRAZOVKY ================= */
 function showWin(){
   sfxWin();
   var f = lvl.fakt;
   var casBonus = timeLeft*2, pokuta = (attempt-1)*50;
-  var popis = finalQ>=90 ? "Pevný kus — materiál bol čistý."
-            : finalQ>=75 ? "Dobrý kus, ale materiál mohol byť lepší."
-            : finalQ>=55 ? "Drobí sa. Použil si slabšiu surovinu."
-            : "Rozpadol sa — materiál bol príliš slabý.";
-  if(hints) popis += " Použil si nápovedu, takže najviac dve hviezdy.";
+  var popis = finalQ>=90 ? t("why3") : finalQ>=75 ? t("why2") : finalQ>=55 ? t("why1") : t("why0");
+  if(hints) popis += t("hintNote");
+  if(undosUsed) popis += t("undoNote");
   $("panel").innerHTML =
     '<h2>' + lvl.cielEmoji + ' ' + (lvl.hotovo || lvl.nazov) + '</h2>' +
-    '<div class="sub">Kolo ' + lvl.cislo + ' · pokusov: ' + attempt + ' · dnes pre všetkých rovnaký stôl</div>' +
+    '<div class="sub">' + t("winSub", {n:lvl.cislo, a:attempt}) + '</div>' +
     '<div class="stars">' + starStr(stars) + '</div>' +
-    '<div class="kv"><span>Kvalita</span><b>' + finalQ + ' %</b></div>' +
-    '<div class="kv"><span>Za kvalitu</span><b>+' + (finalQ*10) + '</b></div>' +
-    '<div class="kv"><span>Zvyšný čas (' + timeLeft + ' s × 2)</span><b>+' + casBonus + '</b></div>' +
-    (pokuta ? '<div class="kv"><span>Za ' + (attempt-1) + '× reštart</span><b>−' + pokuta + '</b></div>' : '') +
-    (hints ? '<div class="kv"><span>Nápovedy (' + hints + '× 40)</span><b>−' + (hints*40) + '</b></div>' : '') +
-    (badMerges ? '<div class="kv"><span>Zré zmesi (' + badMerges + '× 15)</span><b>−' + (badMerges*15) + '</b></div>' : '') +
-    '<div class="kv total"><span>Skóre</span><b>' + levelScore + '</b></div>' +
-    '<div class="card"><span class="t">Prečo práve takto</span>' + popis + ' ' + f + '</div>' +
-    '<div class="card"><span class="t">Receptár</span>Objavené postupy: <b>' + recCount() + '/' + recTotal() + '</b></div>' +
-    '<button class="big" id="nextlv">' + (lvl.cislo < LEVELS.length ? 'Ďalšie kolo →' : 'Skúsiť znova') + '</button>' +
+    '<div class="kv"><span>' + t("quality") + '</span><b>' + finalQ + ' %</b></div>' +
+    '<div class="kv"><span>' + t("forQuality") + '</span><b>+' + (finalQ*10) + '</b></div>' +
+    '<div class="kv"><span>' + t("timeBonus", {t:timeLeft}) + '</span><b>+' + casBonus + '</b></div>' +
+    (pokuta ? '<div class="kv"><span>' + t("restartPenalty", {n:(attempt-1)}) + '</span><b>−' + pokuta + '</b></div>' : '') +
+    (hints ? '<div class="kv"><span>' + t("hintsPenalty", {n:hints}) + '</span><b>−' + (hints*40) + '</b></div>' : '') +
+    (undosUsed ? '<div class="kv"><span>' + t("undosPenalty", {n:undosUsed}) + '</span><b>−' + (undosUsed*UNDO_COST) + '</b></div>' : '') +
+    (badMerges ? '<div class="kv"><span>' + t("badRow", {n:badMerges}) + '</span><b>−' + (badMerges*15) + '</b></div>' : '') +
+    '<div class="kv total"><span>' + t("total") + '</span><b>' + levelScore + '</b></div>' +
+    '<div class="card"><span class="t">' + t("whyTitle") + '</span>' + popis + ' ' + f + '</div>' +
+    '<div class="card"><span class="t">' + t("bookTitle") + '</span>' + t("bookLine", {a:recCount(), b:recTotal()}) + '</div>' +
+    '<button class="big" id="nextlv">' + (lvl.cislo < LEVELS.length ? t("nextLevel") : t("tryAgain")) + '</button>' +
     '<div class="row2" style="margin-top:8px">' +
-      '<button class="ghost" id="sharebtn">📤 Zdieľať</button>' +
-      '<button class="ghost" id="bookbtn">📖 Receptár</button>' +
+      '<button class="ghost" id="sharebtn">' + t("share") + '</button>' +
+      '<button class="ghost" id="menu">🏠 Menu</button>' +
     '</div>';
   $("overlay").classList.remove("hidden");
   $("sharebtn").onclick = function(){ share(); };
-  $("bookbtn").onclick = function(){ showBook(function(){ showWin(); }); };
-  $("nextlv").onclick = function(){
-    if(lvl.cislo < LEVELS.length){
-      setUnlocked(lvl.cislo+1);
-      lvl = LEVELS[lvl.cislo];
-      attempt = 1; initAudio(); startLevel();
-    }else{
-      attempt = 1; initAudio(); startLevel();
-    }
-  };
+  $("menu").onclick = function(){ showIntro(); };
+  $("nextlv").onclick = function(){ nextLevel(); };
 }
 
 function showLost(a, b, popis, timeOut){
   var telo, rada;
   if(timeOut){
-    telo = 'Čas vypršal, kým si prišiel na to, z čoho sa <b>' + lvl.ciel + '</b> skladá.';
-    rada = 'Na stole je viac surovín, než treba. Najprv si v hlave povedz, čo všetko by ' + lvl.ciel + ' potreboval.';
+    telo = t("expiredBody", {x: "<b>" + ING[lvl.ciel].label + "</b>"});
+    rada = t("expiredAdvice", {x: ING[lvl.ciel].label});
   }else{
-    telo = 'Spojil si <b>' + ING[a].label + ' + ' + ING[b].label + '</b> — vznikol nepodarok a tie dve suroviny sú preč. Na <b>' + lvl.ciel + '</b> už na stole nemáš čo použiť, takže kolo sa dokončiť nedá. <br><br>' + popis;
-    rada = 'Zlá zmes sa nedá vrátiť. Nabudúce si najprv premysli, ktoré dve veci k sebe patria — alebo si vezmi 💡 nápovedu (stojí body, ale posunie ťa).';
+    telo = t("lostBody", {x: ING[a].label + " + " + ING[b].label, z: ING[lvl.ciel].label}) + " <br><br>" + popis;
+    rada = t("lostAdvice");
   }
+  var mozem = (zvysOprav() > 0 && history.length > 0);
   $("panel").innerHTML =
-    '<h2 class="lost">' + (timeOut ? '⏱ Čas vypršal' : '✖ Kolo je stratené') + '</h2>' +
-    '<div class="sub">Kolo ' + lvl.cislo + ' · ' + lvl.nazov + ' · pokus ' + attempt + '</div>' +
-    '<div class="card bad"><span class="t">' + (timeOut ? 'Prečo' : 'Zlý postup') + '</span>' + telo + '</div>' +
-    '<div class="card"><span class="t">Rada</span>' + rada + '</div>' +
-    '<button class="big" id="retry">Spustiť kolo znova</button>' +
-    '<button class="ghost" id="bookbtn">📖 Receptár</button>';
+    '<h2 class="lost">' + (timeOut ? t("expired") : t("lostTitle")) + '</h2>' +
+    '<div class="sub">' + t("winSub", {n:lvl.cislo, a:attempt}) + '</div>' +
+    '<div class="card bad"><span class="t">' + (timeOut ? t("why") : t("badStep")) + '</span>' + telo + '</div>' +
+    '<div class="card"><span class="t">' + t("advice") + '</span>' + rada + '</div>' +
+    (mozem ? '<button class="big" id="undobtn">↶ ' + (lang === "en" ? "Fix my last move (−60)" : "Vrátiť posledný ťah (−60)") + '</button>' : '') +
+    '<button class="' + (mozem ? "ghost" : "big") + '" id="retry">' + t("retry") + '</button>' +
+    '<div class="row2" style="margin-top:8px">' +
+      (lvl.cislo < LEVELS.length ? '<button class="ghost" id="skiplv">' + t("nextLevel") + '</button>' : '') +
+      '<button class="ghost" id="menu">🏠 Menu</button>' +
+    '</div>';
   $("overlay").classList.remove("hidden");
+  if($("undobtn")) $("undobtn").onclick = function(){ undo(); };
   $("retry").onclick = function(){ initAudio(); restartLevel(true); };
-  $("bookbtn").onclick = function(){ showBook(function(){ showLost(a,b,popis,timeOut); }); };
+  if($("skiplv")) $("skiplv").onclick = function(){ nextLevel(); };
+  $("menu").onclick = function(){ showIntro(); };
 }
 
 function showBook(back){
   var r = recLoad(), html = "", k, item, pair, e1, e2, vysl;
-  html += '<h2>📖 Receptár</h2><div class="sub">Objavené: ' + recCount() + ' / ' + recTotal() + '</div>';
+  html += '<h2>' + t("bookTitle") + '</h2><div class="sub">' + t("bookDiscovered", {a:recCount(), b:recTotal()}) + '</div>';
   /* postupy */
   for(k in RECEPTAR){
     item = RECEPTAR[k]; pair = k.split("+");
@@ -895,34 +1261,57 @@ function showBook(back){
       html += '<div class="rec"><div class="e">' + e1 + ' + ' + e2 + ' → ' + vysl + '</div>' +
               '<div><b>' + (ING[item.vysl]?ING[item.vysl].label:item.vysl) + '</b><span class="w">' + item.text + '</span></div></div>';
     }else{
-      html += '<div class="rec locked"><div class="e">❔ + ❔ → ❔</div><div><b>Zatiaľ neobjavené</b>' +
-              '<span class="w">Vyskúšaj niečo nové na stole.</span></div></div>';
+      html += '<div class="rec locked"><div class="e">❔ + ❔ → ❔</div><div><b>' + t("bookLocked") + '</b>' +
+              '<span class="w">' + t("bookLockedHint") + '</span></div></div>';
     }
   }
-  html += '<button class="big" id="bookback">Späť do hry</button>';
+  html += '<button class="big" id="bookback">' + t("bookBack") + '</button>';
+  html += '<span class="seclabel">' + t("langLabel") + ' / Language</span><div class="langrow">' +
+    '<button class="langbtn' + (lang === "sk" ? " on" : "") + '" id="lsk">🇸🇰 Slovenčina</button>' +
+    '<button class="langbtn' + (lang === "en" ? " on" : "") + '" id="len">🇬🇧 English</button>' +
+    '</div>';
   $("panel").innerHTML = html;
   $("overlay").classList.remove("hidden");
   $("bookback").onclick = function(){ if(back) back(); else startLevel(); };
+  $("lsk").onclick = function(){ setLang("sk"); showBook(back); };
+  $("len").onclick = function(){ setLang("en"); showBook(back); };
 }
 
 function showIntro(){
-  $("panel").innerHTML =
-    '<h1>🧱 Dielnička</h1>' +
-    '<div class="sub">6 kôl: tehla, betón, sklo, vápno, bronz a oceľ.</div>' +
-    '<ul class="rules">' +
-      '<li>Zadanie ti povie len <b>čo vyrobiť</b>. <b>Ako</b> — to si musíš prísť sám.</li>' +
-      '<li>Na stole máš suroviny. <b>Nie všetky potrebuješ</b> a niektoré vyzerajú podobne.</li>' +
-      '<li>Každá surovina má <b>kvalitu v percentách</b>. Z dobrého materiálu je dobrá vec.</li>' +
-      '<li><b>Zlá zmes zožerie dve suroviny.</b> Kým sa cieľ dá ešte vyrobiť, hra pokračuje — keď nie, kolo treba spustiť znova.</li>' +
-      '<li>💡 <b>Nápoveda</b> ti poradí ďalší krok, ale stojí 40 bodov a uberie hviezdu.</li>' +
-      '<li>Postupy sú <b>zo skutočnej fyziky a chémie</b> a platia všade rovnako.</li>' +
-      '<li>Stôl je <b>každý deň iný a pre všetkých rovnaký</b> — môžeš súperiť s kamarátom.</li>' +
-    '</ul>' +
-    '<button class="big" id="play">Začať hru</button>' +
-    '<button class="ghost" id="bookbtn">📖 Receptár (' + recCount() + '/' + recTotal() + ')</button>';
+  var html = '<h1>⚗️ Little Alchemist</h1>' +
+    '<div class="sub">' + t("introSub") + '</div>' +
+    '<span class="seclabel">' + t("langLabel") + ' / Language</span>' +
+    '<div class="langrow">' +
+      '<button class="langbtn' + (lang === "sk" ? " on" : "") + '" id="lsk">🇸🇰 Slovenčina</button>' +
+      '<button class="langbtn' + (lang === "en" ? " on" : "") + '" id="len">🇬🇧 English</button>' +
+    '</div>' +
+    '<ul class="rules">';
+  var r = t("rules"), i;
+  for(i=0;i<r.length;i++) html += '<li>' + r[i] + '</li>';
+  html += '</ul>' +
+    '<button class="big" id="play">' + t("play") + '</button>' +
+    '<span class="seclabel">' + t("chooseLevel") + '</span><div class="lvlgrid">';
+  for(i=0;i<LEVELS.length;i++){
+    html += '<button class="lvlpick" data-n="' + (i+1) + '"><b>' + (i+1) + '</b>' +
+      LEVELS[i].cielEmoji + '<span>' + LEVELS[i].nazov + '</span></button>';
+  }
+  html += '</div>' +
+    '<button class="ghost" id="bookbtn">' + t("receptarBtn") + ' (' + recCount() + '/' + recTotal() + ')</button>';
+  $("panel").innerHTML = html;
   $("overlay").classList.remove("hidden");
+  $("lsk").onclick = function(){ setLang("sk"); showIntro(); };
+  $("len").onclick = function(){ setLang("en"); showIntro(); };
   $("play").onclick = function(){ initAudio(); startLevel(); };
   $("bookbtn").onclick = function(){ showBook(function(){ showIntro(); }); };
+  var picks = document.querySelectorAll(".lvlpick");
+  for(i=0;i<picks.length;i++){
+    picks[i].onclick = function(){
+      var n = Number(this.dataset.n);
+      setUnlocked(n);
+      lvl = LEVELS[n-1];
+      attempt = 1; initAudio(); startLevel();
+    };
+  }
 }
 
 /* ================= OVLÁDANIE ================= */
@@ -939,11 +1328,14 @@ $("restart").addEventListener("click", function(){ if(running || lost){ initAudi
 $("book").addEventListener("click", function(){ showBook(function(){ if(running) render(); else startLevel(); }); });
 $("hint").addEventListener("click", function(){
   if(!running) return;
-  if(hints >= lvl.kroky.length){ toast("Ďalšiu nápovedu už nemám — celý postup ti hovorím.", ""); return; }
+  if(hints >= lvl.kroky.length){ toast(t("hintNone"), ""); return; }
   hints++;
   levelScore -= 40;
-  toast("Nápoveda " + hints + " (−40 bodov): " + lvl.kroky[hints-1], "");
+  toast(t("hintToast", {n:hints, x:lvl.kroky[hints-1]}), "");
   goal();
+});
+$("undo").addEventListener("click", function(){
+  if(running || lost) undo();
 });
 
 /* ladenie / testovanie */
@@ -951,9 +1343,13 @@ window.DIELNICKA = {
   get: function(){
     return {kolo:lvl.cislo, ciel:lvl.ciel, tiles:tiles, selected:selected, running:running, lost:lost, solved:solved,
             timeLeft:timeLeft, levelScore:levelScore, score:score, badMerges:badMerges, hints:hints,
-            daSaDokoncit:daSaDokoncit(), best:best, attempt:attempt, kvalita:finalQ, stars:stars, receptar:recLoad()};
+            daSaDokoncit:daSaDokoncit(), best:best, attempt:attempt, kvalita:finalQ, stars:stars, receptar:recLoad(),
+            jazyk:lang, opravy:zvysOprav(), historia:history.length, krokText:lvl.kroky};
   },
   tap: function(i){ tap(i); },
+  undo: function(){ undo(); },
+  lang: function(l){ setLang(l||"sk"); },
+  hist: function(){ return history.length; },
   set: function(i,type,q){ tiles[i] = type ? {type:type, q:(q==null?null:q)} : null; render(); },
   start: function(){ initAudio(); attempt = 1; startLevel(); },
   goto: function(n){ lvl = LEVELS[Math.max(0, Math.min(LEVELS.length-1, n-1))]; attempt = 1; initAudio(); startLevel(); },
@@ -964,11 +1360,14 @@ window.DIELNICKA = {
 };
 
 /* ================= ŠTART ================= */
+zapamatajSlovencinu();          /* slovenčina je základ, angličtina sa k nej prikladá */
 attempt = 1; tiles = []; selected = null; running = false; lost = false; solved = false;
 timeLeft = LEVELS[0].cas; levelScore = 0; finalQ = 0; stars = 0;
-lvl = LEVELS[Math.min(unlocked(), LEVELS.length) - 1];
+lvl = LEVELS[0];
 buildBoard(9);
 render();
+setLang(lsGet("dielnicka_jazyk") === "en" ? "en" : "sk");
+hudOprava();
 showIntro();
 
 })();
