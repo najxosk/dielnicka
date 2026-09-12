@@ -102,6 +102,19 @@
   .t-sklo{background:linear-gradient(180deg,#bfe6f0,#7fb9cc); color:#123;}
   .t-odpad{background:linear-gradient(180deg,#6d6a66,#46433f); color:#ded8d2;}
   .t-odpad span{color:rgba(255,255,255,.62);}
+  /* prvky — okrúhle dlaždice s chemickou značkou, aby bolo vidieť,
+     že to nie sú obyčajné suroviny, ale stavebné kamene */
+  .tile.elv{border-radius:50%; border:2px solid rgba(255,255,255,.55); font-weight:800;
+    letter-spacing:-.5px; text-shadow:0 1px 2px rgba(0,0,0,.25);}
+  .tile.elv span{color:rgba(0,0,0,.72);}
+  .tile.elv i{top:7px; right:auto; left:50%; transform:translateX(-50%);}
+  .t-elv1{background:radial-gradient(circle at 34% 28%,#e6f4ff,#7fb3d5);}
+  .t-elv2{background:radial-gradient(circle at 34% 28%,#ffe6df,#e08a76);}
+  .t-elv3{background:radial-gradient(circle at 34% 28%,#f3e4ff,#a97bd0);}
+  .t-elv4{background:radial-gradient(circle at 34% 28%,#e2fff0,#7fc79b);}
+  .t-elv5{background:radial-gradient(circle at 34% 28%,#fff6dc,#d5b56a);}
+  .t-sol{background:linear-gradient(180deg,#ffffff,#d9d9d9); color:#333;}
+  .t-sol span{color:rgba(0,0,0,.55);}
 
   #hintLine{font-size:11px; color:#8f7c6b; text-align:center; line-height:1.4;}
   /* výber kola a jazyka */
@@ -232,6 +245,14 @@ var ING = {
   bronz:  {emoji:"🥉", label:"bronz",    cls:"t-bronz"},
   zelezo: {emoji:"🔩", label:"železo",   cls:"t-zelezo"},
   ocel:   {emoji:"⚙️", label:"oceľ",     cls:"t-ocel"},
+  /* --- prvky: stavebné kamene zlúčenín (iný tvar dlaždice) --- */
+  vodik:  {emoji:"H",  label:"vodík",  cls:"elv t-elv1", kvalita:true},
+  kyslik: {emoji:"O",  label:"kyslík", cls:"elv t-elv2", kvalita:true},
+  sodik:  {emoji:"Na", label:"sodík",  cls:"elv t-elv3", kvalita:true},
+  chlor:  {emoji:"Cl", label:"chlór",  cls:"elv t-elv4", kvalita:true},
+  vapnik: {emoji:"Ca", label:"vápnik", cls:"elv t-elv5", kvalita:true},
+  /* --- zlúčeniny --- */
+  sol:    {emoji:"🧂", label:"soľ",     cls:"t-sol"},
   /* --- hotové výrobky --- */
   tehla:  {emoji:"🧱", label:"tehla",    cls:"t-tehla"},
   betonhotovy:{emoji:"⬛", label:"betón", cls:"t-beton"},
@@ -243,6 +264,9 @@ var ING = {
    Platia VŠADE rovnako — jedna fyzika pre celú hru.
    Každá dvojica, ktorá tu nie je, spraví nepodarok. */
 var RECIPES = {
+  "kyslik+vodik": "voda",
+  "chlor+sodik":  "sol",
+  "kyslik+vapnik":"vapnop",
   "hlina+voda":   "blato",
   "blato+slama":  "cesto",
   "cement+voda":  "kasa",
@@ -270,7 +294,25 @@ var FIRE = {
 /* ================= KOLÁ ================= */
 var LEVELS = [
   {
-    cislo:1, nazov:"Tehla",
+    cislo:1, nazov:"Voda",
+    ciel:"voda", cielEmoji:"💧", cas:60, hotovo:"Voda je hotová",
+    kroky:["Vodík + kyslík = voda"],
+    poradie:["voda"],
+    stol:[["vodik",92],["vodik",70],["kyslik",90],["kyslik",66]],
+    popis:"Dva prvky sa spoja na úplne novú vec. Tomu sa hovorí zlúčenina — nie je to zmes, rukou sa to od seba odobrať nedá.",
+    fakt:"Voda = 2 atómy vodíka + 1 atóm kyslíka (H₂O). Vodík aj kyslík sú plyny — spolu sú kvapka vody."
+  },
+  {
+    cislo:2, nazov:"Kuchynská soľ",
+    ciel:"sol", cielEmoji:"🧂", cas:75, hotovo:"Soľ je hotová",
+    kroky:["Sodík + chlór = kuchynská soľ"],
+    poradie:["sol"],
+    stol:[["sodik",92],["sodik",64],["chlor",90],["chlor",68],["vapnik",80]],
+    popis:"Sodík a chlór tvoria soľ. Na stole je o jednu vec viac — patrí k soľu, alebo je tam naschvál?",
+    fakt:"Kuchynská soľ = sodík + chlór (NaCl). Samy sú nebezpečné: sodík horí vo vode, chlór je jedovatý plyn — spolu sú na jedenie."
+  },
+  {
+    cislo:3, nazov:"Tehla",
     ciel:"tehla", cielEmoji:"🧱", cas:90, hotovo:"Tehla je hotová",
     kroky:["Priprav blato — hlína + voda","Pridaj slamu — vznikne cesto","Ťukni na cesto a vypáľ tehlu"],
     poradie:["blato","cesto","tehla"],
@@ -279,7 +321,7 @@ var LEVELS = [
     fakt:"Tehla = hlina + voda + slama, vypálená pri 1000 °C. Slama je výstuž, voda robí hlinu tvárnou."
   },
   {
-    cislo:2, nazov:"Betón",
+    cislo:4, nazov:"Betón",
     ciel:"betonhotovy", cielEmoji:"⬛", cas:120, hotovo:"Betón je hotový",
     kroky:["Cement + voda = cementová kaša","Kaša + piesok = malta","Malta + kamienok = betón","Ťukni na betón — nechaj vytvrdnúť"],
     poradie:["kasa","malta","beton","betonhotovy"],
@@ -288,7 +330,7 @@ var LEVELS = [
     fakt:"Betón tvrdne chemicky — cement reaguje s vodou celé týždne, nie že by len 'vyschol'."
   },
   {
-    cislo:3, nazov:"Sklo",
+    cislo:5, nazov:"Sklo",
     ciel:"sklo", cielEmoji:"🪟", cas:130, hotovo:"Sklo je hotové",
     kroky:["Piesok + potaš = sklárna zmes","Pridaj vápenec — vznikne sklovina","Ťukni na sklovinu a vypáľ sklo"],
     poradie:["zmes","sklovina","sklo"],
@@ -297,7 +339,7 @@ var LEVELS = [
     fakt:"Bez vápenca by bolo sklo rozpustné vo vode — také sklo by na okno nešlo."
   },
   {
-    cislo:4, nazov:"Vápno a malta",
+    cislo:6, nazov:"Vápno a malta",
     ciel:"malta", cielEmoji:"🪣", cas:130, hotovo:"Malta je hotová",
     kroky:["Ťukni na vápenec a vypáľ ho na pálené vápno","Pálené vápno + voda = hasené vápno","Hasené vápno + piesok = malta"],
     poradie:["vapnop","vapnoh","malta"],
@@ -306,7 +348,7 @@ var LEVELS = [
     fakt:"Hasenie vápna sa zahreje na vyše 100 °C — voda v zmesi vrie. Preto sa hasí opatrne a v malom."
   },
   {
-    cislo:5, nazov:"Bronz",
+    cislo:7, nazov:"Bronz",
     ciel:"bronz", cielEmoji:"🥉", cas:130, hotovo:"Bronz je hotový",
     kroky:["Medená ruda + uhlie = zásyp do pece","Ťukni na zásyp a vytav meď","Meď + cín = bronz"],
     poradie:["zasypcu","med","bronz"],
@@ -315,7 +357,7 @@ var LEVELS = [
     fakt:"Bronz je tvrdší ako meď aj cín samotné. Preto sa z neho robili nástroje — celá bronzová doba."
   },
   {
-    cislo:6, nazov:"Oceľ",
+    cislo:8, nazov:"Oceľ",
     ciel:"ocel", cielEmoji:"⚙️", cas:130, hotovo:"Oceľ je hotová",
     kroky:["Železná ruda + uhlie = zásyp do pece","Ťukni na zásyp a vytav železo","Železo + uhlie = oceľ"],
     poradie:["zasypfe","zelezo","ocel"],
@@ -327,6 +369,9 @@ var LEVELS = [
 
 /* receptár — čo všetko sa dá objaviť a čo to znamená vo fyzike */
 var RECEPTAR = {
+  "kyslik+vodik":{vysl:"voda", text:"Dva plyny, ktoré samy horia alebo pomáhajú horieť, sa spoja na kvapalinu: 2 atómy vodíka + 1 atóm kyslíka = H₂O."},
+  "chlor+sodik":{vysl:"sol", text:"Sodík (Na) je kov, ktorý vo vode horí. Chlór (Cl) je jedovatý plyn. Spolu tvoria kuchynskú soľ (NaCl) — tú jeme."},
+  "kyslik+vapnik":{vysl:"vapnop", text:"Vápnik + kyslík = oxid vápenatý (CaO), teda pálené vápno. To isté vzniká aj vypálením vápenca v peci."},
   "hlina+voda":{vysl:"blato", text:"Suchá hlina sa rozsype. Voda z nej spraví tvárnu hmotu, ktorá drží tvar."},
   "blato+slama":{vysl:"cesto", text:"Slama je výstuž — drží tehlu pokope, aby pri sušení nepraskla. Dnešná obdoba je armovacia sieť v betóne."},
   "cesto->tehla":{vysl:"tehla", text:"Vypálením pri ~1000 °C sa hlina zmení na keramiku: tvrdú a nerozpustnú vo vode."},
@@ -411,7 +456,20 @@ var ZLE = {
   "vapnoh+voda":"Voda už vápno raz zahasila.","vapnoh+kamen":"Kamienok patrí do betónu, nie do vápna.",
   "sklovina+sklovina":"Sklovinu treba vypáliť, nie spájať.","sklovina+piesok":"Piesok už sklovina má.",
   "zasyp+zasyp":"Zásyp treba vypáliť v peci.","zasyp+piesok":"Piesok by pec len upchal.",
-  "zasyp+voda":"Vodu do pece nikdy — pec by praskla.","zasyp+kamen":"Kamienok do pece nepatrí."
+  "zasyp+voda":"Vodu do pece nikdy — pec by praskla.","zasyp+kamen":"Kamienok do pece nepatrí.",
+  /* prvky a zlúčeniny */
+  "vodik+vodik":"Dva vodíky nič — vodík patrí ku kyslíku.",
+  "kyslik+kyslik":"Kyslík s kyslíkom nič — na vodu treba aj vodík.",
+  "sodik+sodik":"Dva sodíky nič — sodík patrí k chlóru.",
+  "chlor+chlor":"Chlór s chlórom nič — chlór patrí k sodíku.",
+  "vapnik+vapnik":"Vápnik s vápnikom nič.",
+  "chlor+vodik":"Vodík a chlór by v skutočnosti spravili kyselinu chlorovodíkovú — na tú je táto dielňa primalá.",
+  "kyslik+sodik":"Sodík s kyslíkom nie je soľ — na soľ treba chlór.",
+  "chlor+vapnik":"Vápnik s chlórom nie je kuchynská soľ — na tú treba sodík.",
+  "sodik+vapnik":"Dva kovy sa na soľ nespoja — soľ = sodík + chlór.",
+  "vodik+vapnik":"Vodík s vápnikom nič — vodík patrí ku kyslíku.",
+  "sol+sol":"Soľ so soľou nič.",
+  "sol+voda":"Soľ sa vo vode len rozpušťá — slaná voda nám nič nedá."
 };
 
 /* ================= ENGLISH (Little Alchemist) =================
@@ -423,10 +481,19 @@ var ING_EN = {
   blato:"mud", cesto:"adobe", kasa:"slurry", malta:"mortar", zasypcu:"Cu charge", zasypfe:"Fe charge",
   beton:"concrete", zmes:"glass batch", sklovina:"frit",
   vapnop:"quicklime", vapnoh:"slaked lime", med:"copper", bronz:"bronze", zelezo:"iron", ocel:"steel",
+  vodik:"hydrogen", kyslik:"oxygen", sodik:"sodium", chlor:"chlorine", vapnik:"calcium", sol:"salt",
   tehla:"brick", betonhotovy:"concrete", sklo:"glass", odpad:"dud"
 };
 
 var LEVELS_EN = [
+  { nazov:"Water", hotovo:"Water is done",
+    kroky:["Hydrogen + oxygen = water"],
+    popis:"Two elements join into something completely new. That is a compound — not a mixture, you cannot take it apart by hand.",
+    fakt:"Water = 2 hydrogen atoms + 1 oxygen atom (H₂O). Both are gases — together they are a drop of water." },
+  { nazov:"Table salt", hotovo:"Salt is done",
+    kroky:["Sodium + chlorine = table salt"],
+    popis:"Sodium and chlorine make salt. There is one thing more on the table — does it belong in salt, or is it there on purpose?",
+    fakt:"Table salt = sodium + chlorine (NaCl). Alone they are dangerous: sodium burns in water, chlorine is a poisonous gas — together they are edible." },
   { nazov:"Brick", hotovo:"Brick is done",
     kroky:["Make mud — clay + water","Add straw to make adobe","Tap the adobe to fire a brick"],
     popis:"A brick is only as good as the clay you use. Quality carries through the whole process.",
@@ -523,10 +590,25 @@ var ZLE_EN = {
   "vapnoh+kamen":"A pebble belongs in concrete, not in lime.",
   "sklovina+sklovina":"Frit has to be fired, not joined.","sklovina+piesok":"The frit has sand already.",
   "zasyp+zasyp":"The charge has to be fired in the furnace.","zasyp+piesok":"Sand would just clog the furnace.",
-  "zasyp+voda":"Never water into a furnace — it would crack.","zasyp+kamen":"A pebble doesn't belong in a furnace."
+  "zasyp+voda":"Never water into a furnace — it would crack.","zasyp+kamen":"A pebble doesn't belong in a furnace.",
+  "vodik+vodik":"Two hydrogens do nothing — hydrogen belongs with oxygen.",
+  "kyslik+kyslik":"Oxygen and oxygen do nothing — water needs hydrogen too.",
+  "sodik+sodik":"Two sodiums do nothing — sodium belongs with chlorine.",
+  "chlor+chlor":"Chlorine and chlorine do nothing — chlorine belongs with sodium.",
+  "vapnik+vapnik":"Calcium and calcium do nothing.",
+  "chlor+vodik":"Hydrogen and chlorine would really make hydrochloric acid — this workshop is too small for that.",
+  "kyslik+sodik":"Sodium and oxygen is not salt — salt needs chlorine.",
+  "chlor+vapnik":"Calcium and chlorine is not table salt — that needs sodium.",
+  "sodik+vapnik":"Two metals don't make salt — salt = sodium + chlorine.",
+  "vodik+vapnik":"Hydrogen and calcium do nothing — hydrogen belongs with oxygen.",
+  "sol+sol":"Salt and salt do nothing.",
+  "sol+voda":"Salt just dissolves in water — salty water gives us nothing."
 };
 
 var RECEPTAR_EN = {
+  "kyslik+vodik":"Two gases — one burns, one feeds fire — join into a liquid: 2 hydrogen atoms + 1 oxygen atom = H₂O.",
+  "chlor+sodik":"Sodium (Na) is a metal that burns in water. Chlorine (Cl) is a poisonous gas. Together they are table salt (NaCl) — which we eat.",
+  "kyslik+vapnik":"Calcium + oxygen = calcium oxide (CaO), that is quicklime. Burning limestone in a kiln gives exactly the same thing.",
   "hlina+voda":"Dry clay crumbles. Water turns it into a workable mass that holds its shape.",
   "blato+slama":"Straw is the reinforcement — it holds the brick together so it doesn't crack while drying. Today we use steel mesh in concrete.",
   "cesto->tehla":"Firing at about 1000 °C turns clay into ceramic: hard and insoluble in water.",
@@ -577,8 +659,8 @@ var T = {
   badDoomed:{sk:"Zlá zmes: {x} — a na cieľ už materiál nemáš.",
     en:"Bad mix: {x} — and you no longer have the materials for the goal."},
   newAttempt:{sk:"Nový pokus — stôl je nasypaný odznova.", en:"New attempt — the table has been refilled."},
-  startToast:{sk:"Vyrob {x}. Z čoho? To si musíš prísť sám.",
-    en:"Make {x}. From what? You have to work that out yourself."},
+  startToast:{sk:"Cieľ kola: {x}. Z čoho? To si musíš prísť sám.",
+    en:"Goal: {x}. From what? You have to work that out yourself."},
   dontHold:{sk:"Toto spolu nedrží.", en:"These two don't hold together."},
   andHold:{sk:"{a} a {b} spolu nedržia.", en:"{a} and {b} don't hold together."},
   winSub:{sk:"Kolo {n} · pokusov: {a} · dnes pre všetkých rovnaký stôl",
@@ -603,16 +685,17 @@ var T = {
   why:{sk:"Prečo", en:"Why"}, badStep:{sk:"Zlý postup", en:"Wrong step"}, advice:{sk:"Rada", en:"Advice"},
   expiredBody:{sk:"Čas vypršal, kým si prišiel na to, z čoho sa <b>{x}</b> skladá.",
     en:"Time ran out before you worked out what <b>{x}</b> is made from."},
-  expiredAdvice:{sk:"Na stole je viac surovín, než treba. Najprv si v hlave povedz, čo všetko by <b>{x}</b> potreboval.",
-    en:"There are more materials on the table than you need. First work out in your head what <b>{x}</b> would need."},
-  lostBody:{sk:"Spojil si <b>{x}</b> — vznikol nepodarok a tie dve suroviny sú preč. Na <b>{z}</b> už na stole nemáš čo použiť, takže kolo sa dokončiť nedá.",
-    en:"You joined <b>{x}</b> — a dud, and those two ingredients are gone. You have nothing left for <b>{z}</b>, so this level cannot be finished."},
+  expiredAdvice:{sk:"Na stole je viac surovín, než treba. Najprv si v hlave povedz, čo všetko do toho patrí.",
+    en:"There are more materials on the table than you need. First work out in your head what belongs in it."},
+  lostBody:{sk:"Spojil si <b>{x}</b> — vznikol nepodarok a tie dve suroviny sú preč. Zvyšok už na dokončenie kola nestačí.",
+    en:"You joined <b>{x}</b> — a dud, and those two ingredients are gone. What is left cannot finish the level."},
   lostAdvice:{sk:"Použi <b>↶ Oprava</b> a vrátiš si posledný ťah — alebo 💡 nápovedu a ukážem ti ďalší krok.",
     en:"Use <b>↶ Fix</b> to take back your last move — or 💡 a hint and I will show you the next step."},
   retry:{sk:"Spustiť kolo znova", en:"Restart the level"},
-  introSub:{sk:"6 kôl: tehla, betón, sklo, vápno, bronz a oceľ.",
-    en:"6 levels: brick, concrete, glass, lime, bronze and steel."},
+  introSub:{sk:"8 kôl: voda, soľ, tehla, betón, sklo, vápno, bronz a oceľ. Prvé dve sú zlúčeniny z prvkov.",
+    en:"8 levels: water, salt, brick, concrete, glass, lime, bronze and steel. The first two are compounds made of elements."},
   rules:{sk:[
+      "Prvé kola sú <b>zlúčeniny</b>: dva prvky — okrúhle dlaždice s chemickou značkou (H, O, Na, Cl, Ca) — sa spoja na novú vec.",
       "Zadanie ti povie len <b>čo vyrobiť</b>. <b>Ako</b> — to si musíš prísť sám.",
       "Na stole máš suroviny. <b>Nie všetky potrebuješ</b> a niektoré vyzerajú podobne.",
       "Každá surovina má <b>kvalitu v percentách</b>. Z dobrého materiálu je dobrá vec.",
@@ -621,6 +704,7 @@ var T = {
       "Postupy sú <b>zo skutočnej fyziky a chémie</b> a platia všade rovnako.",
       "Stôl je <b>každý deň iný a pre všetkých rovnaký</b> — môžeš súperiť s kamarátom."
     ], en:[
+      "The first levels are <b>compounds</b>: two elements — round tiles with a chemical symbol (H, O, Na, Cl, Ca) — join into something new.",
       "The task only tells you <b>what to make</b>. <b>How</b> — you have to work out yourself.",
       "You have materials on the table. <b>You don't need all of them</b> and some look alike.",
       "Every material has a <b>quality in percent</b>. Good material makes a good thing.",
@@ -800,9 +884,13 @@ var cellEls = [], tileEls = [], boardSize = 9;
 
 function buildBoard(n){
   boardSize = n;
-  var cols = n<=9 ? 3 : 4;
+  /* pri dvoch až štyroch veciach na stole dáme dva stĺpce, aby dlaždice
+     ostali štvorcové a nie tenké pásiky */
+  var cols = (n <= 4) ? 2 : (n <= 9 ? 3 : 4);
+  var rows = Math.ceil(n / cols);
   boardEl.style.gridTemplateColumns = "repeat("+cols+",1fr)";
-  boardEl.style.gridTemplateRows = "repeat("+Math.ceil(n/cols)+",1fr)";
+  boardEl.style.gridTemplateRows = "repeat("+rows+",1fr)";
+  boardEl.style.aspectRatio = cols + " / " + rows;
   boardEl.innerHTML = ""; cellEls = []; tileEls = [];
   for(var i=0;i<n;i++){
     var cell = document.createElement("div");
@@ -854,7 +942,7 @@ function hudOprava(){
 }
 function goal(){
   $("goalEmoji").textContent = lvl.cielEmoji;
-  $("goalName").textContent = t("goalMake", {x: ING[lvl.ciel].label});
+  $("goalName").textContent = ING[lvl.ciel].label;
   var txt;
   if(hints > 0 && lvl.kroky[hints-1]) txt = t("hintPrefix", {n:hints, x:lvl.kroky[hints-1]});
   else txt = progressTxt() || t("hintFind");
