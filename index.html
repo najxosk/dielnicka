@@ -71,17 +71,32 @@
   .t-voda{background:linear-gradient(180deg,#6fb2d6,#3f7fa6);}
   .t-slama{background:linear-gradient(180deg,#e6cd76,#c2a43f);}
   .t-piesok{background:linear-gradient(180deg,#e3d9a8,#c3b478);}
-  .t-popol{background:linear-gradient(180deg,#b3aeaa,#807b77);}
+  .t-popol{background:linear-gradient(180deg,#c9c5c0,#8e8a85);}
   .t-kamen{background:linear-gradient(180deg,#a8a29b,#7b756f);}
+  .t-vapenec{background:linear-gradient(180deg,#f2f0ec,#c8c4be);}
   .t-cement{background:linear-gradient(180deg,#eae6e0,#b9b3ab);}
+  .t-uhlie{background:linear-gradient(180deg,#5a5653,#2f2c2a); color:#f0e3d3;}
+  .t-uhlie span{color:rgba(255,255,255,.65);}
+  .t-cin{background:linear-gradient(180deg,#d9dde0,#9aa1a6);}
+  .t-ruda1{background:linear-gradient(180deg,#e0a067,#b06a35);}
+  .t-ruda2{background:linear-gradient(180deg,#9ab6cf,#5f7f9c);}
   .t-blato{background:linear-gradient(180deg,#8a6a52,#5d4433);}
   .t-cesto{background:linear-gradient(180deg,#d9a15e,#b8763a); box-shadow:0 0 14px rgba(232,116,59,.5);}
   .t-kasa{background:linear-gradient(180deg,#d5d1cb,#a29d96);}
   .t-malta{background:linear-gradient(180deg,#bdb6ad,#8a837a);}
+  .t-zasyp{background:linear-gradient(180deg,#7b736b,#4e4841); color:#f0e3d3;}
+  .t-zasyp span{color:rgba(255,255,255,.65);}
   .t-beton{background:linear-gradient(180deg,#8e8b87,#5c5a57);}
-  .t-zmes{background:linear-gradient(180deg,#cbb98a,#9c8a5f);}
-  .t-sklo{background:linear-gradient(180deg,#bfe6f0,#7fb9cc); color:#123;}
+  .t-zmes{background:linear-gradient(180deg,#e2d59b,#b3a266);}
+  .t-sklovina{background:linear-gradient(180deg,#9fd0dd,#5f9cb0);}
+  .t-vapno1{background:linear-gradient(180deg,#f4f2ee,#cfcac3);}
+  .t-vapno2{background:linear-gradient(180deg,#fbfaf8,#ddd9d3);}
+  .t-med{background:linear-gradient(180deg,#e0954f,#b56a2c);}
+  .t-bronz{background:linear-gradient(180deg,#c9a06a,#8c6535);}
+  .t-zelezo{background:linear-gradient(180deg,#9aa3ab,#5d666e);}
+  .t-ocel{background:linear-gradient(180deg,#b9c3cb,#7c868f);}
   .t-tehla{background:linear-gradient(180deg,#c07a4c,#8e4f2b);}
+  .t-sklo{background:linear-gradient(180deg,#bfe6f0,#7fb9cc); color:#123;}
   .t-odpad{background:linear-gradient(180deg,#6d6a66,#46433f); color:#ded8d2;}
   .t-odpad span{color:rgba(255,255,255,.62);}
 
@@ -165,23 +180,40 @@
 "use strict";
 
 /* ================= VECI =================
-   kvalita: true = surovina má svoju kvalitu (%, vyššie = lepšie).
-   Pomocné veci (voda, slama) kvalitu nemajú — do výpočtu nevstupujú. */
+   Všetky kombinácie zodpovedajú skutočným postupom (pokiaľ to hra dovolí).
+   kvalita: true = surovina má svoju kvalitu (%), pomocné veci ju nemajú. */
 var ING = {
+  /* --- suroviny --- */
   hlina:  {emoji:"🟤", label:"hlína",    cls:"t-hlina",  kvalita:true},
   voda:   {emoji:"💧", label:"voda",     cls:"t-voda"},
   slama:  {emoji:"🌾", label:"slama",    cls:"t-slama"},
   piesok: {emoji:"🟨", label:"piesok",   cls:"t-piesok", kvalita:true},
-  popol:  {emoji:"⬜", label:"sóda",     cls:"t-popol",  kvalita:true},
+  popol:  {emoji:"🌫️", label:"potaš",    cls:"t-popol",  kvalita:true},
   kamen:  {emoji:"🪨", label:"kamienok", cls:"t-kamen",  kvalita:true},
+  vapenec:{emoji:"⚪", label:"vápenec",  cls:"t-vapenec",kvalita:true},
   cement: {emoji:"🥛", label:"cement",   cls:"t-cement", kvalita:true},
+  uhlie:  {emoji:"⚫", label:"uhlie",    cls:"t-uhlie",  kvalita:true},
+  cin:    {emoji:"🔘", label:"cín",      cls:"t-cin",    kvalita:true},
+  medruda:{emoji:"🔶", label:"med. ruda",cls:"t-ruda1",  kvalita:true},
+  zelruda:{emoji:"🔷", label:"žel. ruda",cls:"t-ruda2",  kvalita:true},
+  /* --- krok za krokom --- */
   blato:  {emoji:"🟫", label:"blato",    cls:"t-blato"},
   cesto:  {emoji:"🟠", label:"cesto",    cls:"t-cesto"},
   kasa:   {emoji:"🥣", label:"kaša",     cls:"t-kasa"},
   malta:  {emoji:"🪣", label:"malta",    cls:"t-malta"},
+  zasyp:  {emoji:"🥘", label:"zásyp",    cls:"t-zasyp"},
   beton:  {emoji:"⬛", label:"betón",    cls:"t-beton"},
   zmes:   {emoji:"🟡", label:"sklár. zmes", cls:"t-zmes"},
+  sklovina:{emoji:"🔵",label:"sklovina", cls:"t-sklovina"},
+  vapnop: {emoji:"💨", label:"pálené vápno", cls:"t-vapno1"},
+  vapnoh: {emoji:"☁️", label:"hasené vápno", cls:"t-vapno2"},
+  med:    {emoji:"🟧", label:"meď",      cls:"t-med"},
+  bronz:  {emoji:"🥉", label:"bronz",    cls:"t-bronz"},
+  zelezo: {emoji:"🔩", label:"železo",   cls:"t-zelezo"},
+  ocel:   {emoji:"⚙️", label:"oceľ",     cls:"t-ocel"},
+  /* --- hotové výrobky --- */
   tehla:  {emoji:"🧱", label:"tehla",    cls:"t-tehla"},
+  betonhotovy:{emoji:"⬛", label:"betón", cls:"t-beton"},
   sklo:   {emoji:"🪟", label:"sklo",     cls:"t-sklo"},
   odpad:  {emoji:"🗑️", label:"nepodarok",cls:"t-odpad"}
 };
@@ -190,7 +222,7 @@ var ING = {
 var LEVELS = [
   {
     cislo:1, nazov:"Tehla",
-    ciel:"tehla", cielEmoji:"🧱", cas:90,
+    ciel:"tehla", cielEmoji:"🧱", cas:90, hotovo:"Tehla je hotová",
     kroky:["Priprav blato — hlína + voda","Pridaj slamu — vznikne cesto","Ťukni na cesto a vypáľ tehlu"],
     poradie:["blato","cesto","tehla"],
     stol:[["hlina",94],["hlina",61],["hlina",48],["voda"],["voda"],["slama"],["slama"],["piesok",85],["popol",80]],
@@ -201,7 +233,7 @@ var LEVELS = [
   },
   {
     cislo:2, nazov:"Betón",
-    ciel:"beton", cielEmoji:"⬛", cas:120,
+    ciel:"beton", cielEmoji:"⬛", cas:120, hotovo:"Betón je hotový",
     kroky:["Cement + voda = cementová kaša","Kaša + piesok = malta","Malta + kamienok = betón","Ťukni na betón — nechaj vytvrdnúť"],
     poradie:["kasa","malta","beton","beton_hotovy"],
     stol:[["cement",92],["cement",60],["voda"],["voda"],["piesok",88],["piesok",55],["kamen",90],["kamen",70],["popol",75]],
@@ -212,14 +244,47 @@ var LEVELS = [
   },
   {
     cislo:3, nazov:"Sklo",
-    ciel:"sklo", cielEmoji:"🪟", cas:120,
-    kroky:["Zmiešaj piesok a sódu","Ťukni na zmes a vypáľ sklo"],
-    poradie:["zmes","sklo"],
-    stol:[["piesok",95],["piesok",70],["piesok",50],["popol",90],["popol",60],["hlina",70],["voda"],["kamen",80],["slama"]],
-    recepty:{"piesok+popol":"zmes"},
-    vypalit:{zmes:"sklo"},
-    popis:"Sklo je roztavený piesok. Sóda znižuje teplotu, pri ktorej sa piesok roztopí.",
-    fakt:"Čistý piesok sa topí pri ~1700 °C. So sódou už pri ~1400 °C — preto sa sklo dá vyrobiť v peci."
+    ciel:"sklo", cielEmoji:"🪟", cas:130, hotovo:"Sklo je hotové",
+    kroky:["Piesok + potaš = sklárna zmes","Pridaj vápenec — vznikne sklovina","Ťukni na sklovinu a vypáľ sklo"],
+    poradie:["zmes","sklovina","sklo"],
+    stol:[["piesok",95],["piesok",70],["piesok",50],["popol",90],["popol",60],["vapenec",85],["vapenec",55],["hlina",70],["kamen",80]],
+    recepty:{"piesok+popol":"zmes","vapenec+zmes":"sklovina"},
+    vypalit:{sklovina:"sklo"},
+    popis:"Sklo sú tri veci: piesok (sklo samo), potaš (zníži teplotu) a vápenec (aby vydržalo).",
+    fakt:"Bez vápenca by bolo sklo rozpustné vo vode — také sklo by na okno nešlo."
+  },
+  {
+    cislo:4, nazov:"Vápno a malta",
+    ciel:"malta", cielEmoji:"🪣", cas:130, hotovo:"Malta je hotová",
+    kroky:["Ťukni na vápenec a vypáľ ho na pálené vápno","Pálené vápno + voda = hasené vápno","Hasené vápno + piesok = malta"],
+    poradie:["vapnop","vapnoh","malta"],
+    stol:[["vapenec",93],["vapenec",62],["voda"],["voda"],["piesok",88],["piesok",55],["hlina",60],["popol",70],["kamen",80]],
+    recepty:{"voda+vapnop":"vapnoh","piesok+vapnoh":"malta"},
+    vypalit:{vapenec:"vapnop"},
+    popis:"Vápno je základ starých stavieb. Páli sa z vápenca a hasí vodou.",
+    fakt:"Hasenie vápna sa zahreje na vyše 100 °C — voda v zmesi vrie. Preto sa hasí opatrne a v malom."
+  },
+  {
+    cislo:5, nazov:"Bronz",
+    ciel:"bronz", cielEmoji:"🥉", cas:130, hotovo:"Bronz je hotový",
+    kroky:["Medená ruda + uhlie = zásyp do pece","Ťukni na zásyp a vytav meď","Meď + cín = bronz"],
+    poradie:["zasyp","med","bronz"],
+    stol:[["medruda",92],["medruda",58],["uhlie",90],["uhlie",70],["cin",95],["cin",60],["piesok",80],["voda"],["kamen",75]],
+    recepty:{"medruda+uhlie":"zasyp","cin+med":"bronz"},
+    vypalit:{zasyp:"med"},
+    popis:"Kov sa z rudy nedá vybrať len tak — uhlie v peci mu vezme kyslík a zostane čistý kov.",
+    fakt:"Bronz je tvrdší ako meď aj cín samotné. Preto sa z neho robili nástroje — celá bronzová doba."
+  },
+  {
+    cislo:6, nazov:"Oceľ",
+    ciel:"ocel", cielEmoji:"⚙️", cas:130, hotovo:"Oceľ je hotová",
+    kroky:["Železná ruda + uhlie = zásyp do pece","Ťukni na zásyp a vytav železo","Železo + uhlie = oceľ"],
+    poradie:["zasyp","zelezo","ocel"],
+    stol:[["zelruda",94],["zelruda",66],["uhlie",92],["uhlie",65],["hlina",70],["vapenec",75],["piesok",80],["voda"],["kamen",72]],
+    recepty:{"uhlie+zelruda":"zasyp","uhlie+zelezo":"ocel"},
+    vypalit:{zasyp:"zelezo"},
+    popis:"Železo sa taví oveľa vyššie ako meď. Až vysoké pece spravili z železa bežný kov.",
+    fakt:"Oceľ = železo + 0,2 až 2 % uhlíka. Viac uhlíka = tvrdšie, ale krehkejšie."
   }
 ];
 
@@ -228,12 +293,22 @@ var RECEPTAR = {
   "hlina+voda":{vysl:"blato", text:"Suchá hlina sa rozsype. Voda z nej spraví tvárnu hmotu, ktorá drží tvar."},
   "blato+slama":{vysl:"cesto", text:"Slama je výstuž — drží tehlu pokope, aby pri sušení nepraskla. Dnešná obdoba je armovacia sieť v betóne."},
   "cesto->tehla":{vysl:"tehla", text:"Vypálením pri ~1000 °C sa hlina zmení na keramiku: tvrdú a nerozpustnú vo vode."},
-  "cement+voda":{vysl:"kasa", text:"Cement s vodou tvrdne chemicky — kryštáliky rastú medzi zrnami a zamykajú ich."},
+  "cement+voda":{vysl:"kasa", text:"Cement s vodou tvrdne chemicky — kryštáliky rastú medzi zrnami a zamykajú ich. Nie je to sušenie."},
   "kasa+piesok":{vysl:"malta", text:"Piesok v malte bráni praskaniu. Malta bez piesku sa pri tvrdnutí rozpadne."},
-  "malta+kamen":{vysl:"beton", text:"Kamienok je výplň — drží objem, zmenšuje zmrašťovanie a betón je pevnejší."},
+  "kamen+malta":{vysl:"beton", text:"Kamienok je výplň — drží objem, zmenšuje zmrašťovanie a betón je pevnejší a lacnejší."},
   "beton->beton_hotovy":{vysl:"beton", text:"Betón naberá pevnosť celé týždne. Prvých 7 dní rozhoduje o väčšine jeho sily."},
-  "piesok+popol":{vysl:"zmes", text:"Sóda (z popola) znižuje teplotu topenia piesku z ~1700 °C na ~1400 °C."},
-  "zmes->sklo":{vysl:"sklo", text:"Sklo je roztavený piesok, ktorý stuhol skôr, než sa stihli vytvoriť kryštály. Preto je priehľadné."}
+  "piesok+popol":{vysl:"zmes", text:"Potaš z dreveného popola (uhličitan draselný) znižuje teplotu topenia piesku z ~1700 °C na ~1400 °C."},
+  "vapenec+zmes":{vysl:"sklovina", text:"Vápenec je stabilizátor — bez neho by bolo sklo vo vode rozpustné."},
+  "sklovina->sklo":{vysl:"sklo", text:"Sklo je roztavený piesok, ktorý stuhol skôr, než sa stihli vytvoriť kryštály. Preto je priehľadné."},
+  "vapenec->vapnop":{vysl:"vapnop", text:"Vápenec (CaCO3) sa pri ~900 °C rozpadne na pálené vápno (CaO) a oxid uhličitý (CO2)."},
+  "vapnop+voda":{vysl:"vapnoh", text:"Hasenie vápna je prudká reakcia — zmes sa zahreje na vyše 100 °C a voda v nej vrie."},
+  "piesok+vapnoh":{vysl:"malta", text:"Vápenná malta tvrdne na vzduchu: pohlcuje oxid uhličitý a mení sa späť na vápenec. Preto tvrdne pomaly, celé mesiace."},
+  "medruda+uhlie":{vysl:"zasyp", text:"Ruda sa v peci taví s uhlím. Uhlie na seba naviaže kyslík a zostane čistý kov."},
+  "zasyp->med":{vysl:"med", text:"Meď sa vytavuje pri ~1100 °C. Je to jeden z prvých kovov, ktoré ľudia kedy použili."},
+  "cin+med":{vysl:"bronz", text:"Bronz je tvrdší ako meď aj cín samotné. Preto sa z neho robili nástroje — celá bronzová doba."},
+  "uhlie+zelruda":{vysl:"zasyp", text:"V peci uhlie odoberá rude kyslík. Železo sa taví až pri ~1538 °C."},
+  "zasyp->zelezo":{vysl:"zelezo", text:"Železo sa taví pri ~1538 °C — preto sa naň stavali vysoké pece, jedny z najväčších stavieb stredoveku."},
+  "uhlie+zelezo":{vysl:"ocel", text:"Oceľ = železo + 0,2–2 % uhlíka. Uhlík ju robí tvrdšou; viac uhlíka znamená tvrdšie, ale krehkejšie."}
 };
 var ZLE = {
   "hlina+hlina":"Samotná hlina bez vody nedrží.","voda+voda":"Voda s vodou nič nestavia.",
@@ -265,7 +340,41 @@ var ZLE = {
   "malta+malta":"Malta s maltou nič.","malta+voda":"Priveľa vody maltu rozriedi.",
   "malta+cement":"Cement už malta má — treba kamienok.","malta+kamen+kamen":"",
   "beton+beton":"Betón s betónom nič.","beton+cement":"Cement už betón má.",
-  "zmes+zmes":"Dve zmesi nič — jednu treba vypáliť.","zmes+hlina":"Hlína sklo znehodnotí."
+  "zmes+zmes":"Zmes treba vypáliť, nie spájať.","zmes+hlina":"Hlína do sklárskej zmesi nepatrí — sklo by bolo kalné.",
+  "zmes+voda":"Vodu do sklárskej zmesi netreba.",
+  /* nové suroviny */
+  "uhlie+uhlie":"Uhlie s uhlím len horí — nič z toho nie je.",
+  "uhlie+piesok":"Z uhlia a piesku sklo nebude — chýba potaš a vápenec.",
+  "uhlie+hlina":"Uhlie hlinu len zašpiní.","uhlie+voda":"Voda uhlie uhasí.",
+  "uhlie+vapenec":"Uhlie s vápencom bez pece nič.","uhlie+cin":"Uhlie s cínom nič — cín sa len roztopí.",
+  "vapenec+vapenec":"Vápenec s vápencom bez pece nič.",
+  "vapenec+piesok":"Vápenec s pieskom bez vypálenia a bez vody maltu nespraví.",
+  "vapenec+hlina":"Z vápenca a hliny tehla nebude.","vapenec+cement":"Vápenec s cementom nie je malta.",
+  "vapenec+kamen":"Vápenec s kamienkom nič.",
+  "cin+cin":"Cín s cínom nič — do bronzu treba meď.",
+  "med+med":"Dve mede sa nedajú spájať — bronz potrebuje cín.",
+  "med+uhlie":"Meď s uhlím nie je bronz. Bronz = meď + cín.",
+  "med+voda":"Meď sa vo vode len namočí.","med+kamen":"Meď s kamienkom nič.","med+hlina":"Hlína s meďou nič.",
+  "med+piesok":"Piesok s meďou nič.",
+  "medruda+medruda":"Dve rudy bez uhlia sa nevytavia.",
+  "medruda+cin":"Ruda sa musí najprv vytaviť s uhlím — až potom je z nej kov.",
+  "medruda+piesok":"Piesok do pece s rudou nepatrí.","medruda+voda":"Mokrá ruda v peci len zaparí.",
+  "medruda+hlina":"Hlína s rudou nič.","medruda+kamen":"Ruda s kamienkom nič.",
+  "zelruda+zelruda":"Bez uhlia sa ruda nevytaví.",
+  "zelruda+piesok":"Piesok s rudou nič.","zelruda+voda":"Mokrá ruda v peci len zaparí.",
+  "zelruda+hlina":"Hlína s rudou nič.","zelruda+kamen":"Ruda s kamienkom nič.","zelruda+vapenec":"Ruda s vápencom bez pece nič.",
+  "zelezo+zelezo":"Železo so železom nič — oceľ potrebuje uhlík.",
+  "zelezo+ocel":"Oceľ je už hotová — ďalej sa spájať nedá.",
+  "zelezo+piesok":"Piesok železu nič.","zelezo+voda":"Železo vo vode len hrdzavie.","zelezo+hlina":"Hlína so železom nič.",
+  "ocel+ocel":"Oceľ s oceľou nič.","ocel+uhlie":"Oceľ už uhlík má — viac by ju spravilo krehkou.",
+  "vapnop+vapnop":"Dve pálené vápna nič — jedno treba zahasiť vodou.",
+  "vapnop+piesok":"Piesok patrí až do haseného vápna, nie do páleného.",
+  "vapnop+vapnoh":"Pálené a hasené vápno sa už nemiešajú.",
+  "vapnoh+vapnoh":"Dve hasené vápna sa nedajú spájať — treba piesok.",
+  "vapnoh+voda":"Voda už vápno raz zahasila.","vapnoh+kamen":"Kamienok patrí do betónu, nie do vápna.",
+  "sklovina+sklovina":"Sklovinu treba vypáliť, nie spájať.","sklovina+piesok":"Piesok už sklovina má.",
+  "zasyp+zasyp":"Zásyp treba vypáliť v peci.","zasyp+piesok":"Piesok by pec len upchal.",
+  "zasyp+voda":"Vodu do pece nikdy — pec by praskla.","zasyp+kamen":"Kamienok do pece nepatrí."
 };
 function zlaVeta(k){
   var v = ZLE[k];
@@ -388,9 +497,8 @@ function paint(){
         (t.q!=null ? '<i>'+t.q+'</i>' : '');
       cell.appendChild(tile); tileEls[i] = tile;
     }
-    if(t.type === "cesto" || t.type === "beton" || t.type === "zmes"){
-      cell.classList.add("fireable");
-    }
+    if(lvl && lvl.vypalit && lvl.vypalit[t.type]) cell.classList.add("fireable");
+    else cell.classList.remove("fireable");
   }
 }
 function bump(i){
@@ -458,6 +566,8 @@ function combine(a,b){
     paint(); bump(a);
     if(lvl.poradie[stepIndex] === res) stepIndex++;
     goal();
+    /* niektoré kolá končia spojením (napr. meď + cín = bronz), nie vypálením */
+    if(res === lvl.ciel && stepIndex >= lvl.poradie.length) completeLevel(res, q);
     return;
   }
 
@@ -478,25 +588,11 @@ function badMerge(k, x, y){
 }
 
 /* ================= VYPÁLENIE / DOKONČENIE ================= */
-function fire(i){
+/* spoločné dokončenie kola — používa ho vypálenie aj posledné spojenie */
+function completeLevel(outType, q){
   if(!running) return;
-  var t = tiles[i];
-  var hotovo = lvl.vypalit[t.type];
-  if(!hotovo) return;
-  tiles[i] = null;
-  finalQ = (t.q!=null ? t.q : 100);
+  finalQ = (q!=null ? q : 100);
   stars = starsFor(finalQ);
-  var outType = (hotovo === "beton_hotovy") ? "beton" : hotovo;
-
-  if(hotovo === "beton_hotovy"){
-    recUnlock("beton->beton_hotovy");
-    toast("Betón vytvrdol. Hotovo!", "good");
-  }else{
-    recUnlock(t.type + "->" + hotovo);
-    toast("Hotovo: " + ING[hotovo].label + " má kvalitu " + finalQ + " %!", "good");
-  }
-  if(lvl.poradie[stepIndex] === hotovo) stepIndex++;
-
   solved = true; running = false;
   clearInterval(tickTimer);
   levelScore += finalQ*10 + timeLeft*2 - (attempt-1)*50;
@@ -508,6 +604,35 @@ function fire(i){
   floatText("+" + levelScore, "#8fbf5a");
   render();
   finalScene(outType, finalQ, function(){ showWin(); });
+}
+
+function fire(i){
+  if(!running) return;
+  var t = tiles[i];
+  var hotovo = lvl.vypalit[t.type];
+  if(!hotovo) return;
+  var q = (t.q!=null ? t.q : 100);
+  var outType = (hotovo === "beton_hotovy") ? "beton" : hotovo;
+
+  if(hotovo === "beton_hotovy"){
+    recUnlock("beton->beton_hotovy");
+    toast("Betón vytvrdol — má kvalitu " + q + " %.", "good");
+  }else{
+    recUnlock(t.type + "->" + hotovo);
+    toast(ING[outType].label + " je na svete · kvalita " + q + " %", "good");
+  }
+  if(lvl.poradie[stepIndex] === hotovo) stepIndex++;
+
+  if(outType === lvl.ciel){
+    /* vypálením vznikol hotový výrobok kola */
+    tiles[i] = null;
+    paint(); goal();
+    completeLevel(outType, q);
+  }else{
+    /* medzivýrobok ostáva na stole, aby sa dal ďalej spracovať */
+    tiles[i] = {type:outType, q:q};
+    paint(); bump(i); goal();
+  }
 }
 
 /* ================= KOLO ================= */
@@ -621,7 +746,7 @@ function showWin(){
             : finalQ>=55 ? "Drobí sa. Použil si slabšiu surovinu."
             : "Rozpadol sa — materiál bol príliš slabý.";
   $("panel").innerHTML =
-    '<h2>' + lvl.cielEmoji + ' ' + lvl.nazov + ' je hotová</h2>' +
+    '<h2>' + lvl.cielEmoji + ' ' + (lvl.hotovo || lvl.nazov) + '</h2>' +
     '<div class="sub">Kolo ' + lvl.cislo + ' · pokusov: ' + attempt + ' · dnes pre všetkých rovnaký stôl</div>' +
     '<div class="stars">' + starStr(stars) + '</div>' +
     '<div class="kv"><span>Kvalita</span><b>' + finalQ + ' %</b></div>' +
@@ -700,16 +825,17 @@ function showBook(back){
 function showIntro(){
   $("panel").innerHTML =
     '<h1>🧱 Dielnička</h1>' +
-    '<div class="sub">Kolo 1: vyrob tehlu. Potom betón a sklo.</div>' +
+    '<div class="sub">6 kôl: tehla, betón, sklo, vápno, bronz a oceľ.</div>' +
     '<ul class="rules">' +
       '<li>Na stole máš suroviny. <b>Nie všetky potrebuješ.</b></li>' +
       '<li>Každá surovina má <b>kvalitu v percentách</b>. Z dobrého materiálu je dobrá vec.</li>' +
       '<li>Kolo má viac krokov — postupuj podľa zadania hore.</li>' +
       '<li><b>Zlá zmes = koniec kola.</b> Vznikne nepodarok a kolo už nedokončíš.</li>' +
+      '<li>Postupy sú <b>zo skutočnej fyziky a chémie</b> — nič vymyslené.</li>' +
       '<li>Stôl je <b>každý deň iný a pre všetkých rovnaký</b> — môžeš súperiť s kamarátom.</li>' +
       '<li>📖 Receptár si pamätá, čo si už objavil.</li>' +
     '</ul>' +
-    '<button class="big" id="play">Začať kolo (90 sekúnd)</button>' +
+    '<button class="big" id="play">Začať hru</button>' +
     '<button class="ghost" id="bookbtn">📖 Receptár (' + recCount() + '/' + recTotal() + ')</button>';
   $("overlay").classList.remove("hidden");
   $("play").onclick = function(){ initAudio(); startLevel(); };
@@ -739,6 +865,7 @@ window.DIELNICKA = {
   tap: function(i){ tap(i); },
   set: function(i,type,q){ tiles[i] = type ? {type:type, q:(q==null?null:q)} : null; render(); },
   start: function(){ initAudio(); attempt = 1; startLevel(); },
+  goto: function(n){ lvl = LEVELS[Math.max(0, Math.min(LEVELS.length-1, n-1))]; attempt = 1; initAudio(); startLevel(); },
   restart: function(){ restartLevel(true); },
   nextLevel: function(){ setUnlocked(lvl.cislo+1); lvl = LEVELS[Math.min(lvl.cislo, LEVELS.length-1)]; attempt=1; startLevel(); },
   shareText: function(){ return shareText(); },
