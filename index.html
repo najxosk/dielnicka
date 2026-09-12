@@ -57,6 +57,10 @@
     border:1px solid rgba(0,0,0,.35); animation:pop .18s ease-out;}
   .tile span{font-size:10px; letter-spacing:.3px; color:rgba(0,0,0,.6); margin-top:2px; font-weight:700;}
   @keyframes pop{from{transform:scale(.72); opacity:.2} to{transform:scale(1); opacity:1}}
+  .tile.bump{animation:bump .34s cubic-bezier(.3,1.6,.5,1);}
+  @keyframes bump{0%{transform:scale(1)} 45%{transform:scale(1.14)} 100%{transform:scale(1)}}
+  #board.shake{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)}}
   .t-hlina{background:linear-gradient(180deg,#c07a4c,#9b5a33);}
   .t-voda{background:linear-gradient(180deg,#6fb2d6,#3f7fa6);}
   .t-slama{background:linear-gradient(180deg,#e6cd76,#c2a43f);}
@@ -252,25 +256,64 @@ function floatText(txt, color){
   document.body.appendChild(d); setTimeout(function(){ d.remove(); },1000);
 }
 
-/* ================= VYKRESLENIE ================= */
-function render(){
-  var html = "";
+/* ================= VYKRESLENIE =================
+   Zámerne NEprekresľujeme plochu odznova cez innerHTML. Predtým sa tým
+   dlaždice každú sekundu znovu vytvárali a ich animácia sa spúšťala znova
+   — preto to blikalo. Teraz sa menia len tie dlaždice, ktoré sa naozaj zmenili. */
+var cellEls = [], tileEls = [];
+
+function buildBoard(){
+  boardEl.innerHTML = "";
+  cellEls = []; tileEls = [];
   for(var i=0;i<N;i++){
-    var t = tiles[i];
-    var cls = "cell" + (selected===i ? " sel" : "") + (!t ? " empty" : "");
-    html += '<div class="'+cls+'" data-i="'+i+'">';
-    if(t){
-      var ing = ING[t];
-      html += '<div class="tile '+ing.cls+'" data-i="'+i+'">'+ing.emoji+'<span>'+ing.label+'</span></div>';
-    }
-    html += '</div>';
+    var cell = document.createElement("div");
+    cell.className = "cell empty";
+    cell.dataset.i = i;
+    boardEl.appendChild(cell);
+    cellEls.push(cell); tileEls.push(null);
   }
-  boardEl.innerHTML = html;
+}
+
+function paint(){
+  for(var i=0;i<N;i++){
+    var t = tiles[i], cell = cellEls[i], tile = tileEls[i];
+    if(!cell) continue;
+    if(selected===i) cell.classList.add("sel"); else cell.classList.remove("sel");
+    if(!t){
+      cell.classList.add("empty");
+      if(tile){ tile.remove(); tileEls[i] = null; }
+      continue;
+    }
+    cell.classList.remove("empty");
+    if(!tile || tile.dataset.type !== t){
+      if(tile) tile.remove();
+      tile = document.createElement("div");
+      tile.className = "tile " + ING[t].cls;
+      tile.dataset.type = t;
+      tile.innerHTML = ING[t].emoji + "<span>" + ING[t].label + "</span>";
+      cell.appendChild(tile);
+      tileEls[i] = tile;
+    }else{
+      tile.classList.remove("bump");
+    }
+  }
+}
+
+function bump(i){
+  var tile = tileEls[i];
+  if(!tile) return;
+  tile.classList.remove("bump");
+  void tile.offsetWidth;      /* donúti prehliadač animáciu prehrať znova */
+  tile.classList.add("bump");
+}
+
+function hud(){
   $("score").textContent = score;
   $("best").textContent = best;
   $("time").textContent = timeLeft;
-  $("time").className = (timeLeft<=15 ? "low" : "");
+  if(timeLeft<=10) $("time").className = "low"; else $("time").className = "";
 }
+function render(){ paint(); hud(); }
 
 /* ================= ŤUKNUTIE ================= */
 function tap(i){
@@ -307,7 +350,8 @@ function combine(a,b){
     levelScore += 25;
     sfxMerge();
     toast(ING[x].label + " + " + ING[y].label + " = " + ING[res].label + "  (+25)", "good");
-    render();
+    paint();
+    bump(a);
     return;
   }
 
@@ -323,6 +367,8 @@ function badMerge(k){
   sfxBad();
   toast("Zlá zmes: " + ING[p[0]].label + " + " + ING[p[1]].label + " = nepodarok.", "bad");
   render();
+  boardEl.classList.add("shake");
+  setTimeout(function(){ boardEl.classList.remove("shake"); }, 420);
   setTimeout(function(){ showLost(k); }, 900);
 }
 
@@ -359,7 +405,7 @@ function startLevel(){
   tickTimer = setInterval(function(){
     if(!running) return;
     timeLeft--;
-    render();
+    hud();                 /* len čísla — plocha sa už prekresľovať nemusí */
     if(timeLeft <= 0){ timeUp(); }
   }, 1000);
 }
@@ -498,6 +544,7 @@ window.DIELNICKA = {
 attempt = 1; tiles = []; selected = null; running = false; lost = false; solved = false;
 timeLeft = LEVELS[0].cas; levelScore = 0;
 best = Number(localStorage.getItem("dielnicka_rekord")||0);
+buildBoard();
 render();
 showIntro();
 
