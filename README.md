@@ -101,13 +101,34 @@ Repozitár `main` je napojený na **GitHub Pages**. Po každom pushi na `main` s
 sama aktualizuje za 1–3 minúty. Repozitár je **verejný** — ktokoľvek s odkazom si hru zahrá.
 Nič sa nikam neinštaluje a nič nebeží na pozadí.
 
+## 📚 Skúšobňa (súčasť hry)
+
+Tlačidlo **„📚 Skúšobňa"** je v úvodnej ponuke. Sú to tri hry na učenie, každá iným spôsobom:
+
+- **🧪 Chémia** — **spájanie prvkov a látok**: máš cieľ (napr. „Vyrob: vodu") a na stole prvky.
+  Spojíš dva dotykom a vznikne vec. Dáta: `SKCHEM` (úlohy), `SKRECIPES` (kombinácie).
+- **🌱 Pre život** — **„čo nepatrí"**: zo štyroch vecí jedno medzi ostatné nepatrí, ťukneš naň.
+  Dáta: `SKZIVOT`.
+- **🔥 Náročná** — **ťažšie spájanie**, niekedy na viac krokov (spojíš medziprodukt, potom ďalej).
+  Dáta: `SKNAR`.
+
+Vzhľad dlaždíc je v `SKT` (kľúč = id, `e` = emoji/symbol, `l` = popisok, `let` = prvok s okrúhlym tvarom).
+
+**Pridať novú úlohu do Chémie/Náročnej:** do `SKCHEM` / `SKNAR` (na koniec) dopíš
+`{ciel:"id_hotovej_veci", stol:["surovina1","surovina2", ...]}` — `stol` je to, čo hráč dostane na stôl.
+Kombináciu (ktoré dve veci → čo) pridaj do `SKRECIPES` ako `"a+b":"výsledok"` (kľúč zoradený abecedne).
+Hotová vec aj suroviny musia mať záznam v `SKT`. **Kľúče v `SKT` aj v úlohách musia byť identické, bez diakritiky** (napr. `med`, `cin`, `sol`, `popol` — nie `meď`, `cín`), inak sa dlaždica nenačrtne.
+
+**Pridať úlohu do Pre život:** do `SKZIVOT` dopíš `{a:["štyri","veci","na","stole"], z:3}` — `z` je číslo tej (0–3), ktorá nepatrí medzi ostatné.
+
 ---
 
 ## Stav
 
 **Hotové:** 8 kôl podľa skutočnej chémie, slovenčina + angličtina, prvky ako okrúhle dlaždice,
 nápoveda za body, oprava omylu (↶), výber kola z menu, receptár, zdieľanie skóre,
-denný stôl pre všetkých rovnaký, funguje na telefóne aj na počítači.
+denný stôl pre všetkých rovnaký, funguje na telefóne aj na počítači, a v úvodnej ponuke aj
+**📚 Skúšobňa** — tri hry na učenie (Chémia spájaním, Pre život „čo nepatrí", Náročná viackrokové spájanie).
 
 **Zvažované ďalej:** 🫧 mydlo (popol → lúh → mydlo), 🏺 porcelán (hlina + živec + kremeň, 1400 °C),
 🪙 mosadz (meď + zinok), a kola skladané z hotových zlúčenín (cement = vápenec + hlina vypáliť).

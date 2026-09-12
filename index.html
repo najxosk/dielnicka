@@ -1384,13 +1384,15 @@ function showIntro(){
       LEVELS[i].cielEmoji + '<span>' + LEVELS[i].nazov + '</span></button>';
   }
   html += '</div>' +
-    '<button class="ghost" id="bookbtn">' + t("receptarBtn") + ' (' + recCount() + '/' + recTotal() + ')</button>';
+    '<button class="ghost" id="bookbtn">' + t("receptarBtn") + ' (' + recCount() + '/' + recTotal() + ')</button>' +
+    '<button class="ghost" id="skbtn">📚 Skúšobňa</button>';
   $("panel").innerHTML = html;
   $("overlay").classList.remove("hidden");
   $("lsk").onclick = function(){ setLang("sk"); showIntro(); };
   $("len").onclick = function(){ setLang("en"); showIntro(); };
   $("play").onclick = function(){ initAudio(); startLevel(); };
   $("bookbtn").onclick = function(){ showBook(function(){ showIntro(); }); };
+  $("skbtn").onclick = function(){ showSkMenu(); };
   var picks = document.querySelectorAll(".lvlpick");
   for(i=0;i<picks.length;i++){
     picks[i].onclick = function(){
@@ -1457,6 +1459,280 @@ render();
 setLang(lsGet("dielnicka_jazyk") === "en" ? "en" : "sk");
 hudOprava();
 showIntro();
+
+/* ================= SKÚŠOBŇA =================
+   Tri herné časti: Chémia (spájanie prvkov/látok),
+   Pre život („čo nepatrí"), Náročná (viackrokové spájanie).
+   Dáta sú dole v SKT (vzhľad), SKRECIPES (kombinácie),
+   SKCHEM / SKNAR (úlohy so spájaním) a SKZIVOT (čo nepatrí). */
+function skStyle(){
+  if(document.getElementById("skStyle"))return;
+  var s=document.createElement("style"); s.id="skStyle";
+  s.textContent =
+    ".skcard{border:0;width:100%;display:flex;align-items:center;gap:13px;background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;cursor:pointer;box-shadow:0 3px 10px rgba(43,36,29,.10);text-align:left;font-family:inherit}"+
+    ".skcard:active{transform:scale(.98)}"+
+    ".skcard .si{font-size:30px;width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:#f3eadc;flex:none}"+
+    ".skcard .st{font-size:18px;font-weight:700;display:block}"+
+    ".skcard .sd{font-size:13px;color:#6b5d4d;margin-top:2px;line-height:1.35}"+
+    ".skbest{font-size:13px;font-weight:700;color:#1b7a43;margin-top:5px;display:block}"+
+    ".skboard{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}"+
+    ".skt{border:0;border-radius:16px;background:#fff;box-shadow:0 3px 10px rgba(43,36,29,.10);padding:12px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:92px;font-family:inherit}"+
+    ".skt .ske{font-size:32px;line-height:1}"+
+    ".skt .skl{font-size:13px;font-weight:600;color:#4d4436;text-align:center}"+
+    ".skt.e{border-radius:50%;border:2px solid rgba(255,255,255,.7);background:linear-gradient(160deg,#eef4fb,#cfe0f0)}"+
+    ".skt.sel{border:3px solid #e07a3f;box-shadow:0 0 0 3px rgba(224,122,63,.35)}"+
+    ".skt.shake{animation:skShake .3s ease}"+
+    "@keyframes skShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}"+
+    ".skt.dim{opacity:.35}"+
+    ".skgoal{background:#fff8e9;border:2px solid #f0d696;border-radius:14px;padding:10px 14px;margin-bottom:12px;font-size:16px;font-weight:600}"+
+    ".sksucc{background:#eef8f0;border:2px solid #bfe5cc;border-radius:14px;padding:14px;margin-bottom:12px;font-size:16px;font-weight:600}"+
+    ".skmsg{min-height:20px;font-size:14px;font-weight:600;margin-top:10px}"+
+    ".skmsg.bad{color:#c0392b} .skmsg.good{color:#1b7a43}";
+  document.head.appendChild(s);
+}
+skStyle();
+
+var SKT = {
+  vodik:{e:"H", l:"vodík", a:"let"}, kyslik:{e:"O", l:"kyslík", a:"let"},
+  sodik:{e:"Na", l:"sodík", a:"let"}, chlor:{e:"Cl", l:"chlór", a:"let"}, vapnik:{e:"Ca", l:"vápnik", a:"let"},
+  voda:{e:"💧", l:"voda"}, soľ:{e:"🧂", l:"kuchynská soľ"},
+  hlina:{e:"🟤", l:"hlina"}, piesok:{e:"🟡", l:"piesok"}, popol:{e:"⚫", l:"popol"},
+  vápenec:{e:"🪨", l:"vápenec"}, med:{e:"🔶", l:"meď"}, cin:{e:"⚪", l:"cín"}, cukor:{e:"🍬", l:"cukor"},
+  co2:{e:"🌫️", l:"oxid uhličitý"},
+  blato:{e:"🟫", l:"blato"}, potaš:{e:"🤍", l:"potaš"},
+  vapnop:{e:"⬜", l:"pálené vápno"}, vapnoh:{e:"🥛", l:"hasené vápno"},
+  malta:{e:"🏗️", l:"malta"}, zmes:{e:"🧊", l:"sklárna zmes"}, sklovina:{e:"🪟", l:"sklovina"},
+  slaná:{e:"🌊", l:"slaná voda"}, sladká:{e:"🧋", l:"sladká voda"}, sýtená:{e:"🥤", l:"sýtená voda"},
+  bronz:{e:"🥉", l:"bronz"}
+};
+var SKRECIPES = {
+  "kyslik+vodik":"voda", "chlor+sodik":"soľ", "hlina+voda":"blato",
+  "kyslik+vapnik":"vapnop", "popol+popol":"potaš", "cin+med":"bronz",
+  "soľ+voda":"slaná", "cukor+voda":"sladká", "co2+voda":"sýtená",
+  "vapnop+voda":"vapnoh", "piesok+vapnoh":"malta", "piesok+potaš":"zmes",
+  "vápenec+zmes":"sklovina"
+};
+var SKCHEM = [
+  {ciel:"voda",  stol:["vodik","vodik","kyslik","kyslik"]},
+  {ciel:"soľ",   stol:["sodik","sodik","chlor","chlor"]},
+  {ciel:"blato", stol:["hlina","hlina","voda","voda"]},
+  {ciel:"vapnop",stol:["vapnik","vapnik","kyslik","kyslik"]},
+  {ciel:"potaš", stol:["popol","popol","popol","popol"]},
+  {ciel:"bronz", stol:["med","med","cin","cin"]},
+  {ciel:"slaná", stol:["soľ","soľ","voda","voda"]},
+  {ciel:"sladká",stol:["cukor","cukor","voda","voda"]},
+  {ciel:"sýtená",stol:["co2","co2","voda","voda"]},
+  {ciel:"vapnoh",stol:["vapnop","vapnop","voda","voda"]},
+  {ciel:"malta", stol:["piesok","piesok","vapnoh","vapnoh"]}
+];
+var SKNAR = [
+  {ciel:"malta",   stol:["vapnop","voda","piesok","piesok"]},
+  {ciel:"slaná",   stol:["sodik","chlor","voda","voda"]},
+  {ciel:"sýtená",  stol:["vodik","kyslik","co2","co2"]},
+  {ciel:"sklovina",stol:["piesok","potaš","vápenec","piesok"]},
+  {ciel:"vapnoh",  stol:["vapnik","kyslik","voda","voda"]},
+  {ciel:"malta",   stol:["vapnik","kyslik","voda","piesok","piesok"]}
+];
+var SKZIVOT = [
+  {a:["jablko","hruška","banán","tehla"], z:3},
+  {a:["pondelok","utorok","streda","zima"], z:3},
+  {a:["auto","vlak","bicykel","mačka"], z:3},
+  {a:["voda","džús","čaj","chlieb"], z:3},
+  {a:["jar","leto","jeseň","apríl"], z:3},
+  {a:["mačka","pes","koza","ceruzka"], z:3},
+  {a:["tanier","vidlička","lyžica","televízor"], z:3},
+  {a:["tričko","nohavice","čiapka","vlak"], z:3},
+  {a:["lietadlo","raketa","loď","posteľ"], z:3},
+  {a:["bicykel","kolobežka","korčule","stolička"], z:3},
+  {a:["slnko","mesiac","hviezda","dážď"], z:3},
+  {a:["jablko","banán","marhuľa","uhorka"], z:3}
+];
+
+var skMode="", skModefull="", skModeKey="", skList=null, skTi=0, skCount=0, skErr=0;
+var skSel=null, skBoard=null, skBusy=false, skLife=null;
+
+function skHead(txt, cur, total){
+  return '<div class="top"><button class="icon" id="skBack">🏠</button>'+
+    '<div class="topmid">'+txt+'</div><div class="qnum">'+cur+' / '+total+'</div></div>';
+}
+function skBest(key){ return parseInt(lsGet(key)||"0",10)||0; }
+function skBestSave(key,v){ if(v>skBest(key)) lsSet(key,String(v)); }
+
+function showSkMenu(){
+  var hem=skBest("dielnicka_sk_chem"), hzi=skBest("dielnicka_sk_ziv"), hna=skBest("dielnicka_sk_nar");
+  var html = '<h1 class="logo" style="font-size:34px">📚 Skúšobňa</h1>'+
+    '<p class="sub">Tri hry, tri spôsoby učenia. Vyber si jednu.</p>'+
+    '<button class="skcard" id="skc1"><span class="si">🧪</span><span style="flex:1"><span class="st">Chémia</span>'+
+    '<span class="sd">Spájanie prvkov a látok — vodík + kyslík = voda.</span>'+
+    '<span class="skbest">Najlepšie: '+hem+' úloh</span></span></button>'+
+    '<button class="skcard" id="skc2"><span class="si">🌱</span><span style="flex:1"><span class="st">Pre život</span>'+
+    '<span class="sd">Ktoré z vecí tam nepatrí? Rýchla hra na postreh.</span>'+
+    '<span class="skbest">Najlepšie: '+hzi+' úloh</span></span></button>'+
+    '<button class="skcard" id="skc3"><span class="si">🔥</span><span style="flex:1"><span class="st">Náročná</span>'+
+    '<span class="sd">Ťažšie spájanie — niekedy treba aj viac krokov.</span>'+
+    '<span class="skbest">Najlepšie: '+hna+' úloh</span></span></button>'+
+    '<button class="ghost" id="skBackBig">← Späť</button>';
+  $("panel").innerHTML = html;
+  $("overlay").classList.remove("hidden");
+  $("skc1").onclick = function(){ skStart("chem"); };
+  $("skc2").onclick = function(){ skStartLife(); };
+  $("skc3").onclick = function(){ skStart("nar"); };
+  $("skBackBig").onclick = function(){ showIntro(); };
+}
+
+function skStart(mode){
+  skMode=mode; skTi=0; skCount=0; skErr=0;
+  if(mode==="chem"){ skModefull="🧪 Chémia · spájanie"; skModeKey="dielnicka_sk_chem"; skList=SKCHEM; }
+  else { skModefull="🔥 Náročná · spájanie"; skModeKey="dielnicka_sk_nar"; skList=SKNAR; }
+  skLoadCombine();
+}
+function skLoadCombine(){
+  var t=skList[skTi];
+  skBoard=t.stol.slice(); skSel=null; skBusy=false;
+  var html = skHead(skModefull,(skTi+1),skList.length) +
+    '<div class="skgoal">Vyrob: '+SKT[t.ciel].e+' '+SKT[t.ciel].l+
+    '<span style="font-weight:400;display:block;font-size:13px;color:#6b5d4d">Spoj dve veci dotykom. Niektoré úlohy potrebujú viac krokov.</span></div>'+
+    '<div class="skboard"></div>'+
+    '<div class="skmsg" id="skMsg"></div>';
+  $("panel").innerHTML = html;
+  $("overlay").classList.remove("hidden");
+  $("skBack").onclick = function(){ showSkMenu(); };
+  skRenderBoard();
+}
+function skRenderBoard(){
+  var b=$("panel").querySelector(".skboard");
+  if(!b) return;
+  b.innerHTML="";
+  for(var i=0;i<skBoard.length;i++){
+    var id=skBoard[i];
+    if(!id){ var g=document.createElement("span"); g.className="skt dim"; b.appendChild(g); continue; }
+    var t=document.createElement("button"); t.className="skt"+(SKT[id].a==="let"?" e":"")+(skSel===i?" sel":"");
+    t.innerHTML='<span class="ske">'+SKT[id].e+'</span><span class="skl">'+SKT[id].l+'</span>';
+    t.onclick=(function(ii){ return function(){ skTap(ii); }; })(i);
+    b.appendChild(t);
+  }
+}
+function skMsg(txt,bad){
+  var m=$("skMsg"); if(!m)return; m.textContent=txt; m.className="skmsg "+(bad?"bad":"good");
+}
+function skTap(i){
+  var cur=skBoard[i]; if(!cur) return;
+  if(skSel===i){ skSel=null; skRenderBoard(); return; }
+  if(skSel===null){ skSel=i; skRenderBoard(); return; }
+  var a=skBoard[skSel];
+  var key = a < cur ? a+'+'+cur : cur+'+'+a;
+  var prod=SKRECIPES[key];
+  if(prod){
+    skBoard[skSel]=prod; skBoard[i]=null; skSel=null;
+    if(prod===skList[skTi].ciel){ skWinCombine(); return; }
+    skMsg("✅ "+SKT[prod].l+" je hotové — pokračuj.", false);
+    skRenderBoard();
+  } else {
+    skErr++; skSel=null;
+    skMsg("❌ "+SKT[a].l+" a "+SKT[cur].l+" k sebe nepatria. Skús inú dvojicu.", true);
+    skRenderBoard();
+    var els=$("panel").querySelectorAll(".skt:not(.dim)");
+    if(els[i]) els[i].classList.add("shake");
+  }
+}
+function skWinCombine(){
+  skCount++;
+  var last=(skTi+1>=skList.length);
+  var html = skHead(skModefull,(skTi+1),skList.length) +
+    '<div class="sksucc">✅ '+SKT[skList[skTi].ciel].e+' '+SKT[skList[skTi].ciel].l+' je hotové!'+
+    '<span style="font-weight:400;display:block;font-size:14px">Celkom chýb: '+skErr+'</span></div>'+
+    '<button class="big" id="skNext">'+(last?'Výsledok →':'Ďalšia úloha →')+'</button>';
+  $("panel").innerHTML = html;
+  $("overlay").classList.remove("hidden");
+  $("skBack").onclick = function(){ showSkMenu(); };
+  $("skNext").onclick = function(){ if(last) skResult(); else { skTi++; skLoadCombine(); } };
+}
+
+function skStartLife(){
+  skMode="ziv"; skModefull="🌱 Pre život · čo nepatrí"; skModeKey="dielnicka_sk_ziv";
+  skList=SKZIVOT; skTi=0; skCount=0; skErr=0;
+  skLoadLife();
+}
+function skLoadLife(){
+  var r=skList[skTi];
+  var order=[0,1,2,3]; for(var i=3;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t;}
+  skLife=[];
+  var html = skHead(skModefull,(skTi+1),skList.length) +
+    '<div class="skgoal">Ktoré z týchto štyroch medzi ostatné <b>nepatrí</b>? Ťukni naň.</div>'+
+    '<div class="skboard" id="skLifeB"></div>'+
+    '<div class="skmsg" id="skMsg"></div>';
+  $("panel").innerHTML = html;
+  $("overlay").classList.remove("hidden");
+  $("skBack").onclick = function(){ showSkMenu(); };
+  var b=$("skLifeB");
+  for(i=0;i<4;i++){
+    var pos=order[i]; var odd=(pos===r.z);
+    skLife.push(odd);
+    var t=document.createElement("button"); t.className="skt";
+    t.innerHTML='<span class="ske">❓</span><span class="skl">'+r.a[pos]+'</span>';
+    t.onclick=(function(ii){ return function(){ skLifeTap(ii); }; })(i);
+    b.appendChild(t);
+  }
+}
+function skLifeTap(i){
+  if(skBusy) return;
+  if(skLife[i]){ skLifeWin(); return; }
+  skErr++; skBusy=true;
+  skMsg("❌ Toto tam patrí. Hľadaj tú, čo je iná.", true);
+  var els=$("panel").querySelectorAll("#skLifeB .skt");
+  if(els[i]) els[i].classList.add("shake");
+  setTimeout(function(){ skBusy=false; },350);
+}
+function skLifeWin(){
+  skCount++;
+  var last=(skTi+1>=skList.length);
+  var html = skHead(skModefull,(skTi+1),skList.length) +
+    '<div class="sksucc">✅ Správne — to naozaj medzi ostatné nepatrí.'+
+    '<span style="font-weight:400;display:block;font-size:14px">Celkom chýb: '+skErr+'</span></div>'+
+    '<button class="big" id="skNext">'+(last?'Výsledok →':'Ďalšia úloha →')+'</button>';
+  $("panel").innerHTML = html;
+  $("overlay").classList.remove("hidden");
+  $("skBack").onclick = function(){ showSkMenu(); };
+  $("skNext").onclick = function(){ if(last) skResult(); else { skTi++; skLoadLife(); } };
+}
+function skResult(){
+  skBestSave(skModeKey,skCount);
+  var best=skBest(skModeKey);
+  var stars = skErr===0 ? 3 : (skErr<=3 ? 2 : 1);
+  var bar = "★★★".slice(0,stars)+"☆☆☆".slice(0,3-stars);
+  var html = '<div style="text-align:center;padding:18px 0">'+
+    '<div style="font-size:46px;letter-spacing:4px">'+bar+'</div>'+
+    '<div style="font-size:19px;font-weight:700;margin:10px 0">'+skModefull.substr(2)+'</div>'+
+    '<div class="score">Zvládnuté: '+skCount+' úloh '+(skErr?'· '+skErr+' chýb':'· bez chýb')+'</div>'+
+    '<div class="sub">Najlepší výsledok: '+best+' úloh</div>'+
+    '<button class="big" id="skNext" style="margin-top:16px">Hrať znova</button>'+
+    '<button class="ghost" id="skMenu2">🏠 Menu Skúšobne</button>'+
+    '</div>';
+  $("panel").innerHTML = html;
+  $("overlay").classList.remove("hidden");
+  $("skNext").onclick = function(){ if(skMode==="ziv") skStartLife(); else skStart(skMode); };
+  $("skMenu2").onclick = function(){ showSkMenu(); };
+}
+
+/* testovacie rozhranie */
+window.SKUS = {
+  menu: function(){ showSkMenu(); },
+  open: function(p){ if(p==="nar")skStart("nar"); else if(p==="ziv")skStartLife(); else skStart("chem"); },
+  state: function(){
+    var stab={over:!$("overlay").classList.contains("hidden"), mode:skMode, ti:skTi,
+      total:(skList?skList.length:0), count:skCount, err:skErr,
+      board: skBoard?skBoard.slice():null, life: skLife?skLife.slice():null, ciel:null, diag:""};
+    try{
+      stab.ciel = (skList && skList[skTi] && skMode!=="ziv") ? SKT[skList[skTi].ciel].l : null;
+    }catch(e){
+      stab.diag = e.message + " | cielKey=" + (skList&&skList[skTi]?skList[skTi].ciel:"?") +
+        " | SKT=" + (typeof SKT) + " | vodaIn=" + ((typeof SKT==="object"&&SKT)?("voda" in SKT):"?");
+    }
+    return stab;
+  },
+  tap: function(i){ if(skMode==="ziv")skLifeTap(i); else skTap(i); },
+  next: function(){ var b=document.getElementById("skNext"); if(b) b.onclick(); }
+};
 
 })();
 </script>
