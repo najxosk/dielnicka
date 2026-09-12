@@ -29,20 +29,21 @@
   #time.low{color:var(--bad); animation:pulse .8s infinite;}
   @keyframes pulse{50%{opacity:.45}}
   #hudBottom{display:flex; align-items:center; gap:6px; margin-top:6px;}
-  .lvlchip{font-size:11px; color:#a08a75; letter-spacing:.4px; flex:1;}
+  .lvlchip{font-size:10.5px; color:#a08a75; letter-spacing:.2px; flex:1; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .iconbtn{background:transparent; border:1px solid var(--line); color:var(--text);
-    border-radius:8px; font-size:14px; min-width:36px; height:30px; cursor:pointer;}
+    border-radius:8px; font-size:14px; min-width:33px; height:29px; cursor:pointer; padding:0 4px;}
   .iconbtn:active{background:#3b2b20;}
 
   #goal{display:flex; align-items:center; gap:10px; background:var(--panel);
-    border:1px solid var(--line); border-radius:12px; padding:8px 11px; min-height:58px;}
+    border:1px solid var(--line); border-radius:12px; padding:8px 11px; height:70px; overflow:hidden;}
   #goal .ge{font-size:27px;}
   #goal .gt{display:flex; flex-direction:column; line-height:1.25; min-width:0;}
   #goal .gt small{font-size:9.5px; letter-spacing:1.2px; text-transform:uppercase; color:var(--fire);}
   #goal .gt span{font-size:14.5px; font-weight:600;}
   #goal .gt em{font-size:11px; color:#8f7c6b; font-style:normal;}
 
-  #toast{min-height:32px; text-align:center; font-size:13px; color:#cdbba6;
+  #toast{height:54px; overflow:hidden; text-align:center; font-size:13px; color:#cdbba6;
     display:flex; align-items:center; justify-content:center; padding:0 4px; line-height:1.3;}
   #toast.good{color:var(--ok);} #toast.bad{color:var(--bad);}
 
@@ -86,6 +87,8 @@
   .t-malta{background:linear-gradient(180deg,#bdb6ad,#8a837a);}
   .t-zasyp{background:linear-gradient(180deg,#7b736b,#4e4841); color:#f0e3d3;}
   .t-zasyp span{color:rgba(255,255,255,.65);}
+  .t-zasyp2{background:linear-gradient(180deg,#6b7580,#454e56); color:#f0e3d3;}
+  .t-zasyp2 span{color:rgba(255,255,255,.65);}
   .t-beton{background:linear-gradient(180deg,#8e8b87,#5c5a57);}
   .t-zmes{background:linear-gradient(180deg,#e2d59b,#b3a266);}
   .t-sklovina{background:linear-gradient(180deg,#9fd0dd,#5f9cb0);}
@@ -154,7 +157,8 @@
       <div class="hud-item"><span class="lbl">Rekord</span><b id="best">0</b></div>
     </div>
     <div id="hudBottom">
-      <span class="lvlchip" id="lvlchip">Kolo 1/3 · dnes</span>
+      <span class="lvlchip" id="lvlchip">Kolo 1/6 · dnes</span>
+      <button class="iconbtn" id="hint" title="Nápoveda (stojí 40 bodov)">💡</button>
       <button class="iconbtn" id="book" title="Receptár">📖</button>
       <button class="iconbtn" id="restart" title="Reštart kola">↺</button>
       <button class="iconbtn" id="mute" title="Zvuk">🔈</button>
@@ -163,7 +167,7 @@
   <div id="goal">
     <div class="ge" id="goalEmoji">🧱</div>
     <div class="gt">
-      <small id="goalStep">KROK 1/3</small>
+      <small id="goalStep">CIEĽ</small>
       <span id="goalName">—</span>
       <em id="goalHint">—</em>
     </div>
@@ -201,7 +205,8 @@ var ING = {
   cesto:  {emoji:"🟠", label:"cesto",    cls:"t-cesto"},
   kasa:   {emoji:"🥣", label:"kaša",     cls:"t-kasa"},
   malta:  {emoji:"🪣", label:"malta",    cls:"t-malta"},
-  zasyp:  {emoji:"🥘", label:"zásyp",    cls:"t-zasyp"},
+  zasypcu:{emoji:"🥘", label:"med. zásyp", cls:"t-zasyp"},
+  zasypfe:{emoji:"🍲", label:"žel. zásyp", cls:"t-zasyp2"},
   beton:  {emoji:"⬛", label:"betón",    cls:"t-beton"},
   zmes:   {emoji:"🟡", label:"sklár. zmes", cls:"t-zmes"},
   sklovina:{emoji:"🔵",label:"sklovina", cls:"t-sklovina"},
@@ -218,6 +223,34 @@ var ING = {
   odpad:  {emoji:"🗑️", label:"nepodarok",cls:"t-odpad"}
 };
 
+/* ================= REAKCIE =================
+   Platia VŠADE rovnako — jedna fyzika pre celú hru.
+   Každá dvojica, ktorá tu nie je, spraví nepodarok. */
+var RECIPES = {
+  "hlina+voda":   "blato",
+  "blato+slama":  "cesto",
+  "cement+voda":  "kasa",
+  "kasa+piesok":  "malta",
+  "kamen+malta":  "beton",
+  "piesok+popol": "zmes",
+  "vapenec+zmes": "sklovina",
+  "voda+vapnop":  "vapnoh",
+  "piesok+vapnoh":"malta",
+  "medruda+uhlie":"zasypcu",
+  "uhlie+zelruda":"zasypfe",
+  "cin+med":      "bronz",
+  "uhlie+zelezo": "ocel"
+};
+/* čo sa dá vypáliť / vytaviť / nechať vytvrdnúť */
+var FIRE = {
+  cesto:    "tehla",
+  beton:    "betonhotovy",
+  sklovina: "sklo",
+  vapenec:  "vapnop",
+  zasypcu:  "med",
+  zasypfe:  "zelezo"
+};
+
 /* ================= KOLÁ ================= */
 var LEVELS = [
   {
@@ -226,19 +259,15 @@ var LEVELS = [
     kroky:["Priprav blato — hlína + voda","Pridaj slamu — vznikne cesto","Ťukni na cesto a vypáľ tehlu"],
     poradie:["blato","cesto","tehla"],
     stol:[["hlina",94],["hlina",61],["hlina",48],["voda"],["voda"],["slama"],["slama"],["piesok",85],["popol",80]],
-    recepty:{"hlina+voda":"blato","blato+slama":"cesto"},
-    vypalit:{cesto:"tehla"},
     popis:"Tehla drží podľa toho, akú hlinu použiješ. Kvalita sa prenáša celým postupom.",
     fakt:"Tehla = hlina + voda + slama, vypálená pri 1000 °C. Slama je výstuž, voda robí hlinu tvárnou."
   },
   {
     cislo:2, nazov:"Betón",
-    ciel:"beton", cielEmoji:"⬛", cas:120, hotovo:"Betón je hotový",
+    ciel:"betonhotovy", cielEmoji:"⬛", cas:120, hotovo:"Betón je hotový",
     kroky:["Cement + voda = cementová kaša","Kaša + piesok = malta","Malta + kamienok = betón","Ťukni na betón — nechaj vytvrdnúť"],
-    poradie:["kasa","malta","beton","beton_hotovy"],
+    poradie:["kasa","malta","beton","betonhotovy"],
     stol:[["cement",92],["cement",60],["voda"],["voda"],["piesok",88],["piesok",55],["kamen",90],["kamen",70],["popol",75]],
-    recepty:{"cement+voda":"kasa","kasa+piesok":"malta","malta+kamen":"beton"},
-    vypalit:{beton:"beton_hotovy"},
     popis:"Betón je zmes cementu, piesku a kamienka. Každá zložka musí byť dobrá, inak betón praskne.",
     fakt:"Betón tvrdne chemicky — cement reaguje s vodou celé týždne, nie že by len 'vyschol'."
   },
@@ -248,8 +277,6 @@ var LEVELS = [
     kroky:["Piesok + potaš = sklárna zmes","Pridaj vápenec — vznikne sklovina","Ťukni na sklovinu a vypáľ sklo"],
     poradie:["zmes","sklovina","sklo"],
     stol:[["piesok",95],["piesok",70],["piesok",50],["popol",90],["popol",60],["vapenec",85],["vapenec",55],["hlina",70],["kamen",80]],
-    recepty:{"piesok+popol":"zmes","vapenec+zmes":"sklovina"},
-    vypalit:{sklovina:"sklo"},
     popis:"Sklo sú tri veci: piesok (sklo samo), potaš (zníži teplotu) a vápenec (aby vydržalo).",
     fakt:"Bez vápenca by bolo sklo rozpustné vo vode — také sklo by na okno nešlo."
   },
@@ -259,8 +286,6 @@ var LEVELS = [
     kroky:["Ťukni na vápenec a vypáľ ho na pálené vápno","Pálené vápno + voda = hasené vápno","Hasené vápno + piesok = malta"],
     poradie:["vapnop","vapnoh","malta"],
     stol:[["vapenec",93],["vapenec",62],["voda"],["voda"],["piesok",88],["piesok",55],["hlina",60],["popol",70],["kamen",80]],
-    recepty:{"voda+vapnop":"vapnoh","piesok+vapnoh":"malta"},
-    vypalit:{vapenec:"vapnop"},
     popis:"Vápno je základ starých stavieb. Páli sa z vápenca a hasí vodou.",
     fakt:"Hasenie vápna sa zahreje na vyše 100 °C — voda v zmesi vrie. Preto sa hasí opatrne a v malom."
   },
@@ -268,10 +293,8 @@ var LEVELS = [
     cislo:5, nazov:"Bronz",
     ciel:"bronz", cielEmoji:"🥉", cas:130, hotovo:"Bronz je hotový",
     kroky:["Medená ruda + uhlie = zásyp do pece","Ťukni na zásyp a vytav meď","Meď + cín = bronz"],
-    poradie:["zasyp","med","bronz"],
+    poradie:["zasypcu","med","bronz"],
     stol:[["medruda",92],["medruda",58],["uhlie",90],["uhlie",70],["cin",95],["cin",60],["piesok",80],["voda"],["kamen",75]],
-    recepty:{"medruda+uhlie":"zasyp","cin+med":"bronz"},
-    vypalit:{zasyp:"med"},
     popis:"Kov sa z rudy nedá vybrať len tak — uhlie v peci mu vezme kyslík a zostane čistý kov.",
     fakt:"Bronz je tvrdší ako meď aj cín samotné. Preto sa z neho robili nástroje — celá bronzová doba."
   },
@@ -279,10 +302,8 @@ var LEVELS = [
     cislo:6, nazov:"Oceľ",
     ciel:"ocel", cielEmoji:"⚙️", cas:130, hotovo:"Oceľ je hotová",
     kroky:["Železná ruda + uhlie = zásyp do pece","Ťukni na zásyp a vytav železo","Železo + uhlie = oceľ"],
-    poradie:["zasyp","zelezo","ocel"],
+    poradie:["zasypfe","zelezo","ocel"],
     stol:[["zelruda",94],["zelruda",66],["uhlie",92],["uhlie",65],["hlina",70],["vapenec",75],["piesok",80],["voda"],["kamen",72]],
-    recepty:{"uhlie+zelruda":"zasyp","uhlie+zelezo":"ocel"},
-    vypalit:{zasyp:"zelezo"},
     popis:"Železo sa taví oveľa vyššie ako meď. Až vysoké pece spravili z železa bežný kov.",
     fakt:"Oceľ = železo + 0,2 až 2 % uhlíka. Viac uhlíka = tvrdšie, ale krehkejšie."
   }
@@ -296,7 +317,7 @@ var RECEPTAR = {
   "cement+voda":{vysl:"kasa", text:"Cement s vodou tvrdne chemicky — kryštáliky rastú medzi zrnami a zamykajú ich. Nie je to sušenie."},
   "kasa+piesok":{vysl:"malta", text:"Piesok v malte bráni praskaniu. Malta bez piesku sa pri tvrdnutí rozpadne."},
   "kamen+malta":{vysl:"beton", text:"Kamienok je výplň — drží objem, zmenšuje zmrašťovanie a betón je pevnejší a lacnejší."},
-  "beton->beton_hotovy":{vysl:"beton", text:"Betón naberá pevnosť celé týždne. Prvých 7 dní rozhoduje o väčšine jeho sily."},
+  "beton->betonhotovy":{vysl:"beton", text:"Betón naberá pevnosť celé týždne. Prvých 7 dní rozhoduje o väčšine jeho sily."},
   "piesok+popol":{vysl:"zmes", text:"Potaš z dreveného popola (uhličitan draselný) znižuje teplotu topenia piesku z ~1700 °C na ~1400 °C."},
   "vapenec+zmes":{vysl:"sklovina", text:"Vápenec je stabilizátor — bez neho by bolo sklo vo vode rozpustné."},
   "sklovina->sklo":{vysl:"sklo", text:"Sklo je roztavený piesok, ktorý stuhol skôr, než sa stihli vytvoriť kryštály. Preto je priehľadné."},
@@ -304,10 +325,10 @@ var RECEPTAR = {
   "vapnop+voda":{vysl:"vapnoh", text:"Hasenie vápna je prudká reakcia — zmes sa zahreje na vyše 100 °C a voda v nej vrie."},
   "piesok+vapnoh":{vysl:"malta", text:"Vápenná malta tvrdne na vzduchu: pohlcuje oxid uhličitý a mení sa späť na vápenec. Preto tvrdne pomaly, celé mesiace."},
   "medruda+uhlie":{vysl:"zasyp", text:"Ruda sa v peci taví s uhlím. Uhlie na seba naviaže kyslík a zostane čistý kov."},
-  "zasyp->med":{vysl:"med", text:"Meď sa vytavuje pri ~1100 °C. Je to jeden z prvých kovov, ktoré ľudia kedy použili."},
+  "zasypcu->med":{vysl:"med", text:"Meď sa vytavuje pri ~1100 °C. Je to jeden z prvých kovov, ktoré ľudia kedy použili."},
   "cin+med":{vysl:"bronz", text:"Bronz je tvrdší ako meď aj cín samotné. Preto sa z neho robili nástroje — celá bronzová doba."},
   "uhlie+zelruda":{vysl:"zasyp", text:"V peci uhlie odoberá rude kyslík. Železo sa taví až pri ~1538 °C."},
-  "zasyp->zelezo":{vysl:"zelezo", text:"Železo sa taví pri ~1538 °C — preto sa naň stavali vysoké pece, jedny z najväčších stavieb stredoveku."},
+  "zasypfe->zelezo":{vysl:"zelezo", text:"Železo sa taví pri ~1538 °C — preto sa naň stavali vysoké pece, jedny z najväčších stavieb stredoveku."},
   "uhlie+zelezo":{vysl:"ocel", text:"Oceľ = železo + 0,2–2 % uhlíka. Uhlík ju robí tvrdšou; viac uhlíka znamená tvrdšie, ale krehkejšie."}
 };
 var ZLE = {
@@ -385,7 +406,8 @@ function zlaVeta(k){
 }
 
 /* ================= STAV ================= */
-var lvl, tiles, selected, running, lost, solved, timeLeft, levelScore, attempt, stepIndex, tickTimer;
+var lvl, tiles, selected, running, lost, solved, timeLeft, levelScore, attempt, tickTimer;
+var badMerges = 0, hints = 0, revealed = [];
 var score = 0, best = 0, muted = false, stars = 0, finalQ = 0;
 var $ = function(id){ return document.getElementById(id); };
 var boardEl = $("board"), toastEl = $("toast");
@@ -424,6 +446,7 @@ function normKey(k){
 }
 function normTable(o){ var m = {}, k; for(k in o) m[normKey(k)] = o[k]; return m; }
 ZLE = normTable(ZLE);
+RECIPES = normTable(RECIPES);
 RECEPTAR = normTable(RECEPTAR);
 function shuffle(arr, rnd){
   for(var i=arr.length-1;i>0;i--){ var j=Math.floor(rnd()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
@@ -497,7 +520,7 @@ function paint(){
         (t.q!=null ? '<i>'+t.q+'</i>' : '');
       cell.appendChild(tile); tileEls[i] = tile;
     }
-    if(lvl && lvl.vypalit && lvl.vypalit[t.type]) cell.classList.add("fireable");
+    if(lvl && FIRE[t.type]) cell.classList.add("fireable");
     else cell.classList.remove("fireable");
   }
 }
@@ -512,12 +535,22 @@ function hud(){
   $("time").className = (timeLeft<=10 ? "low" : "");
 }
 function goal(){
-  var krok = Math.min(stepIndex, lvl.kroky.length-1);
-  $("goalStep").textContent = "KROK " + (krok+1) + "/" + lvl.kroky.length + " · " + lvl.nazov.toUpperCase();
-  $("goalName").textContent = lvl.kroky[krok];
-  $("goalHint").textContent = lvl.popis;
   $("goalEmoji").textContent = lvl.cielEmoji;
+  $("goalName").textContent = "Vyrob: " + ING[lvl.ciel].label;
+  var txt;
+  if(hints > 0 && lvl.kroky[hints-1]) txt = "Nápoveda " + hints + ": " + lvl.kroky[hints-1];
+  else txt = progressTxt() || "Postup (z čoho sa to skladá) si musíš nájsť sám.";
+  $("goalHint").textContent = txt;
+  $("goalStep").textContent = "CIEĽ" + (hints ? " · nápoveda " + hints : "");
   $("lvlchip").textContent = "Kolo " + lvl.cislo + "/" + LEVELS.length + " · dnes";
+}
+/* čo už hráč na stole vyrobil — bez toho, aby sme mu prezradili recept */
+function progressTxt(){
+  var last = null;
+  for(var i=0;i<lvl.poradie.length-1;i++){
+    for(var j=0;j<tiles.length;j++) if(tiles[j] && tiles[j].type === lvl.poradie[i]) last = lvl.poradie[i];
+  }
+  return last ? "Zatiaľ máš: " + ING[last].label + ". Čo s tým ďalej?" : "";
 }
 function render(){ paint(); hud(); goal(); }
 
@@ -534,17 +567,37 @@ function kvalita(vstup){
 function tap(i){
   if(!running) return;
   var t = tiles[i];
-  if(!t) {
+
+  if(!t){
     if(selected!==null && tiles[selected]){
       tiles[i] = tiles[selected]; tiles[selected] = null; selected = null;
       sfx(430,0.05,"sine",0.05); paint(); return;
     }
     selected = null; paint(); return;
   }
+
   if(t.type === "odpad"){ toast("Toto je nepodarok — nedá sa použiť.", "bad"); return; }
-  if(lvl.vypalit && lvl.vypalit[t.type]){ fire(i); return; }
-  if(selected === null){ selected = i; paint(); return; }
-  if(selected === i){ selected = null; paint(); return; }
+
+  if(selected === null){
+    selected = i; paint();
+    if(FIRE[t.type]) toast("Vybraté — ťukni naň ešte raz a spustíš pec (🔥).", "");
+    return;
+  }
+
+  if(selected === i){
+    if(FIRE[t.type]) fire(i);
+    else { selected = null; paint(); }
+    return;
+  }
+
+  /* máme vybraté jednu vec a ťukáme na druhú */
+  var maRecept = !!RECIPES[key(tiles[selected].type, t.type)];
+  if(!maRecept && FIRE[t.type]){
+    /* na vypáliteľnú vec sa neútočí — radšej ju len vyberieme */
+    selected = i; paint();
+    toast("Vybraté — ťukni naň ešte raz a spustíš pec (🔥).", "");
+    return;
+  }
   combine(selected, i);
 }
 
@@ -553,7 +606,7 @@ function combine(a,b){
   selected = null;
   if(!x || !y){ paint(); return; }
   var k = key(x.type, y.type);
-  var res = lvl.rec[k];
+  var res = RECIPES[k];
 
   if(res){
     var q = kvalita([x,y]);
@@ -562,12 +615,10 @@ function combine(a,b){
     levelScore += 25;
     sfxMerge();
     toast(ING[x.type].label + " + " + ING[y.type].label + " = " + ING[res].label +
-          (q!=null ? "  · kvalita " + q + " %" : "") + "  (+25)" + (jeNovy ? "  📖 nové!" : ""), "good");
+          (q!=null ? "  · kvalita " + q + " %" : "") + (jeNovy ? "  📖 nové!" : ""), "good");
     paint(); bump(a);
-    if(lvl.poradie[stepIndex] === res) stepIndex++;
+    if(res === lvl.ciel){ completeLevel(res, q); return; }
     goal();
-    /* niektoré kolá končia spojením (napr. meď + cín = bronz), nie vypálením */
-    if(res === lvl.ciel && stepIndex >= lvl.poradie.length) completeLevel(res, q);
     return;
   }
 
@@ -575,16 +626,49 @@ function combine(a,b){
   badMerge(k, x, y);
 }
 
+/* ================= DÁ SA EŠTE CIEĽ VYROBIŤ? =================
+   Po každej zlej zmesi hra prezradí, či sú ešte na stole suroviny na cieľ.
+   Ak nie, kolo sa nedá dokončiť a treba reštart. */
+function pocet(){
+  var c = {}, i, t;
+  for(i=0;i<tiles.length;i++){ t = tiles[i]; if(t && t.type !== "odpad") c[t.type] = (c[t.type]||0)+1; }
+  return c;
+}
+function kopiruj(c){ var o = {}, k; for(k in c) o[k] = c[k]; return o; }
+function spravit(typ, c){
+  if((c[typ]||0) > 0){ var r = kopiruj(c); r[typ]--; return r; }
+  var f;
+  for(f in FIRE){ if(FIRE[f] === typ){ var rt = spravit(f, c); if(rt) return rt; } }
+  for(var key in RECIPES){
+    if(RECIPES[key] === typ){
+      var p = key.split("+");
+      var a = spravit(p[0], c);
+      if(a){ var b = spravit(p[1], a); if(b) return b; }
+    }
+  }
+  return null;
+}
+function daSaDokoncit(){ return spravit(lvl.ciel, pocet()) !== null; }
+
 function badMerge(k, x, y){
-  lost = true; running = false;
-  clearInterval(tickTimer);
+  levelScore -= 15; badMerges++;
   sfxBad();
-  toast("Zlá zmes: " + ING[x.type].label + " + " + ING[y.type].label + " = nepodarok.", "bad");
   paint();
   boardEl.classList.add("shake");
   setTimeout(function(){ boardEl.classList.remove("shake"); }, 420);
   var popis = zlaVeta(k);
-  setTimeout(function(){ showLost(x.type, y.type, popis); }, 900);
+  var kto = ING[x.type].label + " + " + ING[y.type].label;
+
+  if(daSaDokoncit()){
+    /* o dve suroviny menej, ale cieľ sa ešte dá vyrobiť — hra pokračuje */
+    toast("Zlá zmes: " + kto + " = nepodarok. " + popis + " O dve suroviny menej — ešte to vieš dokončiť.", "bad");
+    goal();
+  }else{
+    lost = true; running = false;
+    clearInterval(tickTimer);
+    toast("Zlá zmes: " + kto + " — a na cieľ už materiál nemáš.", "bad");
+    setTimeout(function(){ showLost(x.type, y.type, popis); }, 900);
+  }
 }
 
 /* ================= VYPÁLENIE / DOKONČENIE ================= */
@@ -593,9 +677,10 @@ function completeLevel(outType, q){
   if(!running) return;
   finalQ = (q!=null ? q : 100);
   stars = starsFor(finalQ);
+  if(hints > 0 && stars > 2) stars = 2;
   solved = true; running = false;
   clearInterval(tickTimer);
-  levelScore += finalQ*10 + timeLeft*2 - (attempt-1)*50;
+  levelScore += finalQ*10 + timeLeft*2 - (attempt-1)*50 - hints*40;
   if(levelScore < 50) levelScore = 50;
   score = levelScore;
   saveBest(score);
@@ -609,28 +694,24 @@ function completeLevel(outType, q){
 function fire(i){
   if(!running) return;
   var t = tiles[i];
-  var hotovo = lvl.vypalit[t.type];
+  var hotovo = FIRE[t.type];
   if(!hotovo) return;
+  selected = null;                 /* nič nesmie zostať vybraté */
   var q = (t.q!=null ? t.q : 100);
-  var outType = (hotovo === "beton_hotovy") ? "beton" : hotovo;
+  var outType = (hotovo === "betonhotovy") ? "beton" : hotovo;
 
-  if(hotovo === "beton_hotovy"){
-    recUnlock("beton->beton_hotovy");
-    toast("Betón vytvrdol — má kvalitu " + q + " %.", "good");
-  }else{
-    recUnlock(t.type + "->" + hotovo);
-    toast(ING[outType].label + " je na svete · kvalita " + q + " %", "good");
-  }
-  if(lvl.poradie[stepIndex] === hotovo) stepIndex++;
+  recUnlock(t.type + "->" + hotovo);
+  if(t.type === "beton") toast("Betón vytvrdol — kvalita " + q + " %.", "good");
+  else toast(ING[outType].label + " je na svete · kvalita " + q + " %", "good");
 
-  if(outType === lvl.ciel){
-    /* vypálením vznikol hotový výrobok kola */
+  if(hotovo === lvl.ciel){
+    /* vznikol hotový výrobok kola */
     tiles[i] = null;
     paint(); goal();
     completeLevel(outType, q);
   }else{
     /* medzivýrobok ostáva na stole, aby sa dal ďalej spracovať */
-    tiles[i] = {type:outType, q:q};
+    tiles[i] = {type:hotovo, q:q};
     paint(); bump(i); goal();
   }
 }
@@ -650,13 +731,12 @@ function layoutFor(level){
 }
 
 function startLevel(){
-  if(!lvl.rec) lvl.rec = normTable(lvl.recepty);   /* recepty kola, vždy zoradené dvojice */
   tiles = layoutFor(lvl);
   buildBoard(tiles.length);
   selected = null; lost = false; solved = false; running = true;
-  levelScore = 0; timeLeft = lvl.cas; stepIndex = 0;
+  levelScore = 0; timeLeft = lvl.cas; hints = 0; revealed = []; badMerges = 0;
   score = 0; best = loadBest();
-  toast("Z čoho sa " + lvl.ciel + " skladá?", "");
+  toast("Vyrob " + lvl.ciel + ". Z čoho? To si musíš prísť sám.", "");
   render();
   $("overlay").classList.add("hidden");
   clearInterval(tickTimer);
@@ -745,6 +825,7 @@ function showWin(){
             : finalQ>=75 ? "Dobrý kus, ale materiál mohol byť lepší."
             : finalQ>=55 ? "Drobí sa. Použil si slabšiu surovinu."
             : "Rozpadol sa — materiál bol príliš slabý.";
+  if(hints) popis += " Použil si nápovedu, takže najviac dve hviezdy.";
   $("panel").innerHTML =
     '<h2>' + lvl.cielEmoji + ' ' + (lvl.hotovo || lvl.nazov) + '</h2>' +
     '<div class="sub">Kolo ' + lvl.cislo + ' · pokusov: ' + attempt + ' · dnes pre všetkých rovnaký stôl</div>' +
@@ -753,6 +834,8 @@ function showWin(){
     '<div class="kv"><span>Za kvalitu</span><b>+' + (finalQ*10) + '</b></div>' +
     '<div class="kv"><span>Zvyšný čas (' + timeLeft + ' s × 2)</span><b>+' + casBonus + '</b></div>' +
     (pokuta ? '<div class="kv"><span>Za ' + (attempt-1) + '× reštart</span><b>−' + pokuta + '</b></div>' : '') +
+    (hints ? '<div class="kv"><span>Nápovedy (' + hints + '× 40)</span><b>−' + (hints*40) + '</b></div>' : '') +
+    (badMerges ? '<div class="kv"><span>Zré zmesi (' + badMerges + '× 15)</span><b>−' + (badMerges*15) + '</b></div>' : '') +
     '<div class="kv total"><span>Skóre</span><b>' + levelScore + '</b></div>' +
     '<div class="card"><span class="t">Prečo práve takto</span>' + popis + ' ' + f + '</div>' +
     '<div class="card"><span class="t">Receptár</span>Objavené postupy: <b>' + recCount() + '/' + recTotal() + '</b></div>' +
@@ -781,8 +864,8 @@ function showLost(a, b, popis, timeOut){
     telo = 'Čas vypršal, kým si prišiel na to, z čoho sa <b>' + lvl.ciel + '</b> skladá.';
     rada = 'Na stole je viac surovín, než treba. Najprv si v hlave povedz, čo všetko by ' + lvl.ciel + ' potreboval.';
   }else{
-    telo = 'Spojil si <b>' + ING[a].label + ' + ' + ING[b].label + '</b> — vznikol nepodarok. Surovina je minutá, takže <b>' + lvl.ciel + '</b> už nevyrobíš. <br><br>' + popis;
-    rada = 'Zlá zmes sa nedá vrátiť. Radšej si najprv premysli, ktoré dve veci k sebe patria.';
+    telo = 'Spojil si <b>' + ING[a].label + ' + ' + ING[b].label + '</b> — vznikol nepodarok a tie dve suroviny sú preč. Na <b>' + lvl.ciel + '</b> už na stole nemáš čo použiť, takže kolo sa dokončiť nedá. <br><br>' + popis;
+    rada = 'Zlá zmes sa nedá vrátiť. Nabudúce si najprv premysli, ktoré dve veci k sebe patria — alebo si vezmi 💡 nápovedu (stojí body, ale posunie ťa).';
   }
   $("panel").innerHTML =
     '<h2 class="lost">' + (timeOut ? '⏱ Čas vypršal' : '✖ Kolo je stratené') + '</h2>' +
@@ -827,13 +910,13 @@ function showIntro(){
     '<h1>🧱 Dielnička</h1>' +
     '<div class="sub">6 kôl: tehla, betón, sklo, vápno, bronz a oceľ.</div>' +
     '<ul class="rules">' +
-      '<li>Na stole máš suroviny. <b>Nie všetky potrebuješ.</b></li>' +
+      '<li>Zadanie ti povie len <b>čo vyrobiť</b>. <b>Ako</b> — to si musíš prísť sám.</li>' +
+      '<li>Na stole máš suroviny. <b>Nie všetky potrebuješ</b> a niektoré vyzerajú podobne.</li>' +
       '<li>Každá surovina má <b>kvalitu v percentách</b>. Z dobrého materiálu je dobrá vec.</li>' +
-      '<li>Kolo má viac krokov — postupuj podľa zadania hore.</li>' +
-      '<li><b>Zlá zmes = koniec kola.</b> Vznikne nepodarok a kolo už nedokončíš.</li>' +
-      '<li>Postupy sú <b>zo skutočnej fyziky a chémie</b> — nič vymyslené.</li>' +
+      '<li><b>Zlá zmes zožerie dve suroviny.</b> Kým sa cieľ dá ešte vyrobiť, hra pokračuje — keď nie, kolo treba spustiť znova.</li>' +
+      '<li>💡 <b>Nápoveda</b> ti poradí ďalší krok, ale stojí 40 bodov a uberie hviezdu.</li>' +
+      '<li>Postupy sú <b>zo skutočnej fyziky a chémie</b> a platia všade rovnako.</li>' +
       '<li>Stôl je <b>každý deň iný a pre všetkých rovnaký</b> — môžeš súperiť s kamarátom.</li>' +
-      '<li>📖 Receptár si pamätá, čo si už objavil.</li>' +
     '</ul>' +
     '<button class="big" id="play">Začať hru</button>' +
     '<button class="ghost" id="bookbtn">📖 Receptár (' + recCount() + '/' + recTotal() + ')</button>';
@@ -854,13 +937,21 @@ boardEl.addEventListener("touchstart", function(e){ e.preventDefault(); }, {pass
 $("mute").addEventListener("click", function(){ muted = !muted; $("mute").textContent = muted ? "🔇" : "🔈"; });
 $("restart").addEventListener("click", function(){ if(running || lost){ initAudio(); restartLevel(true); } });
 $("book").addEventListener("click", function(){ showBook(function(){ if(running) render(); else startLevel(); }); });
+$("hint").addEventListener("click", function(){
+  if(!running) return;
+  if(hints >= lvl.kroky.length){ toast("Ďalšiu nápovedu už nemám — celý postup ti hovorím.", ""); return; }
+  hints++;
+  levelScore -= 40;
+  toast("Nápoveda " + hints + " (−40 bodov): " + lvl.kroky[hints-1], "");
+  goal();
+});
 
 /* ladenie / testovanie */
 window.DIELNICKA = {
   get: function(){
-    return {kolo:lvl.cislo, tiles:tiles, selected:selected, running:running, lost:lost, solved:solved,
-            krok:stepIndex, kroky:lvl.kroky.length, timeLeft:timeLeft, levelScore:levelScore, score:score,
-            best:best, attempt:attempt, kvalita:finalQ, stars:stars, receptar:recLoad()};
+    return {kolo:lvl.cislo, ciel:lvl.ciel, tiles:tiles, selected:selected, running:running, lost:lost, solved:solved,
+            timeLeft:timeLeft, levelScore:levelScore, score:score, badMerges:badMerges, hints:hints,
+            daSaDokoncit:daSaDokoncit(), best:best, attempt:attempt, kvalita:finalQ, stars:stars, receptar:recLoad()};
   },
   tap: function(i){ tap(i); },
   set: function(i,type,q){ tiles[i] = type ? {type:type, q:(q==null?null:q)} : null; render(); },
@@ -873,7 +964,7 @@ window.DIELNICKA = {
 };
 
 /* ================= ŠTART ================= */
-attempt = 1; tiles = []; selected = null; running = false; lost = false; solved = false; stepIndex = 0;
+attempt = 1; tiles = []; selected = null; running = false; lost = false; solved = false;
 timeLeft = LEVELS[0].cas; levelScore = 0; finalQ = 0; stars = 0;
 lvl = LEVELS[Math.min(unlocked(), LEVELS.length) - 1];
 buildBoard(9);
