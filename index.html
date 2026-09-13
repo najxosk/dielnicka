@@ -11,7 +11,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <button class="iconbtn" id="homeBtn" title="Home">⌂</button>
+    <button class="iconbtn" id="homeBtn" title="Home" aria-label="Home">⌂</button>
     <div class="brand"><b>Little Alchemist</b><small id="brandSub">Alchemy Academy</small></div>
     <div class="pill">✨ <span id="xpTop">0</span> XP</div>
     <div class="pill">🔥 <span id="streakTop">1</span></div>
@@ -33,24 +33,24 @@
     <div class="panel row"><div style="font-size:30px">🎁</div><div class="grow"><b id="dailyTitle">Denná iskra</b><div class="muted" style="font-size:12px" id="dailyText">Otvor hru každý deň a získaj bonus XP.</div></div><button class="btn" id="claimBtn">Vyzdvihnúť</button></div>
     <div class="sectionTitle"><h2 id="settingsTitle">Jazyk</h2><span>SK / EN</span></div>
     <div class="langSwitch"><button data-lang="sk">Slovenčina</button><button data-lang="en">English</button></div>
-    <div class="footerNote">Little Alchemist v1.0 · offline progres · bez účtu</div>
+    <div class="footerNote">Little Alchemist v1.1 · offline progres · bez účtu</div>
   </section>
 
   <section id="map" class="screen">
-    <div class="levelHead"><button class="iconbtn" id="mapBack">←</button><div class="grow"><h2 id="mapTitle">Chémia</h2><small id="mapSub">50 levelov</small></div><div class="stars" id="mapStars"></div></div>
+    <div class="levelHead"><button class="iconbtn" id="mapBack" aria-label="Back">←</button><div class="grow"><h2 id="mapTitle">Chémia</h2><small id="mapSub">50 levelov</small></div><div class="stars" id="mapStars"></div></div>
     <div class="panel"><div class="progress"><i id="mapProg"></i></div><div style="height:14px"></div><div class="levelmap" id="levelMap"></div></div>
   </section>
 
   <section id="play" class="screen">
-    <div class="levelHead"><button class="iconbtn" id="playBack">←</button><div class="grow"><h2 id="playTitle"></h2><small id="playSub"></small></div><div class="pill">✨ <span id="runXp">0</span></div></div>
+    <div class="levelHead"><button class="iconbtn" id="playBack" aria-label="Back">←</button><div class="grow"><h2 id="playTitle"></h2><small id="playSub"></small></div><div class="pill">✨ <span id="runXp">0</span></div></div>
     <div class="goal"><small id="goalKicker"></small><div class="big" id="goalText"></div><small id="goalHint"></small></div>
-    <div class="tiles" id="tiles"></div><div class="msg" id="msg"></div>
+    <div class="tiles" id="tiles"></div><div class="msg" id="msg" aria-live="polite"></div>
   </section>
 
   <section id="result" class="screen">
     <div class="panel reward"><div class="orb">⚗️</div><h2 id="resultTitle">Hotovo!</h2><div class="stars" id="resultStars" style="font-size:28px"></div><p id="resultText"></p><div class="row"><button class="btn secondary" id="resultMap">Mapa</button><button class="btn good" id="resultNext">Ďalší level</button></div></div>
   </section>
 </div>
-<script src="little-alchemist-v1.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
