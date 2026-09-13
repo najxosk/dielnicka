@@ -14,6 +14,6 @@ Lokálne prešli obsahové testy vrátane riešiteľnosti všetkých 100 alchymi
   "progress": 100,
   "missing": ["Merge v1.2 do main a overenie následného GitHub Pages nasadenia", "Doplnkový playtest na fyzickom telefóne / Safari"],
   "nextStep": "Skontrolovať PR a zelené GitHub Actions, zlúčiť v1.2, potom overiť publikovanú hru.",
-  "notes": "v1.2 implementácia dokončená; lokálne obsahové a prehliadačové testy prešli. 33 úvodných receptov, 30 kategórií, 50 rôznych otázok, 6 úspešných a 4 chybové efekty, SVG fallback, reduced motion. Repo slug zostáva dielnicka."
+  "notes": "v1.2: 33 úvodných receptov, 30 kategórií, 50 otázok, 6 úspešných a 4 chybové efekty. Po spätnej väzbe tri prostredia: laboratórny stôl s nádobami podľa suroviny, drevené kartičky na štipcoch a stredoveká dielňa s majstrom. Ostré SVG kontúry, reduced motion. Lokálne testy prešli; repo slug zostáva dielnicka."
 }
 ```

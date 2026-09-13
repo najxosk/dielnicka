@@ -24,6 +24,8 @@ Vizuálne prezreté screenshoty mobilného domova, Pre život, Majstra a bublino
 
 ## Automatizácia a hranice
 
+Vizuálna aktualizácia po spätnej väzbe: tri odlišné scény, nádoby podľa suroviny a vektorové obrysy efektov. Rozšírený prehliadačový test kontroluje misku (level 4), tanier na ľad (6), slamu na stole (12), skúmavky (18) a prepínanie laboratória, drevenej dielničky a stredovekej scény. Doplnkové screenshoty: `lab-materials-*.png`, `medieval-master.png`, `pegged-cards.png`.
+
 `npm test` a `npm run test:browser` prešli lokálne. GitHub Actions spúšťa obe sady na Linuxe s Chromium a ukladá screenshoty. Stav konkrétneho behu na odoslanom commite je v kontrolách PR.
 
 Neuskutočnené: manuálne prejdenie všetkých 150 levelov na fyzickom telefóne, Safari/iOS a kontrola publikovaného v1.2 po merge. Mobilná emulácia nepreukazuje výkon každého staršieho zariadenia. Existujúca majstrovská cesta naďalej používa desať viackrokových vzorov s obmenami rušivých surovín; nová obsahová diverzita tejto verzie je sústredená na Chémiu a Pre život.

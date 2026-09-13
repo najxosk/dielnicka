@@ -86,6 +86,16 @@ async function main(){
   }
   // All six success families and four failure shapes are exercised through gameplay.
   await page.setViewportSize({width:390,height:844});
+  // Material-aware vessels and the three distinct scenes remain visible on touch screens.
+  for(const [n,vessel] of [[4,'bowl'],[6,'plate'],[12,'table'],[18,'tube']]){
+   await open('chem',n);assert(await page.locator('.vessel-'+vessel).count()>0);
+   assert.equal(await page.locator('body').getAttribute('data-scene'),'chem');
+   await noOverflow();await page.screenshot({path:path.join(out,'lab-materials-'+n+'.png'),fullPage:true});
+  }
+  await open('hard',1);assert.equal(await page.locator('body').getAttribute('data-scene'),'hard');
+  await page.screenshot({path:path.join(out,'medieval-master.png'),fullPage:true});
+  await open('life',1);assert.equal(await page.locator('body').getAttribute('data-scene'),'life');
+  await page.screenshot({path:path.join(out,'pegged-cards.png'),fullPage:true});
   for(const [n,kind] of [[1,'merge'],[2,'metal'],[3,'bubble'],[4,'glow'],[6,'merge'],[9,'spark'],[14,'steam']]){
    await open('chem',n);await craft('chem',n,'en');assert((await page.locator('#reactionFx').getAttribute('class')).includes('fx-'+kind));
    if(kind==='bubble'){

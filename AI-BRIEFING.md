@@ -8,6 +8,7 @@ Verzia **1.2**, pripravená na merge po kontrole PR a CI. Repo: najxosk/dielnick
 - RECIPES + CHEM_ORDER: 33 rôznych úvodných receptov, potom rozostúpené návraty. Žiadne susedné rovnaké rodiny úloh ani ciele.
 - CATS: 30 kategórií, SK/EN názov skupiny, päť členov, jeden jednoznačný outsider; položky [sk,en,icon]. LIFE má 50 odlišných štvoríc.
 - ART poskytuje SVG pre nové emoji nepodporované staršími fontmi.
+- SCENES a setupScene vykresľujú laboratórium, drevenú dielničku a stredovekú dielňu s majstrom. specimen/vesselFor priraďujú surovinám misku, skúmavku, tanier alebo voľné miesto na stole. Po reakcii sa nádoba prispôsobí produktu. PARTICLE definuje ostré vektorové obrysy efektov.
 - Zachovať SK/EN a kompatibilitu kľúča little_alchemist_v1. Číslovanie a odomykanie sa zachovávajú aj pri novom obsahu.
 - clearFeedback, settling, completed chránia navigáciu a jednorazové dokončenie. Reštart ruší čakajúci úspech aj častice.
 - Efekty bez runtime závislostí, najviac 10 častíc, maximálne 850 ms, obmedzený pohyb rešpektovaný.

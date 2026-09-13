@@ -9,6 +9,7 @@ Vzdelávacia hra pre mobil aj desktop: **150 levelov**, SK/EN, bez účtu a back
 - **Majster alchýmie (50 levelov):** zachované viackrokové recepty a odomykanie; nový reštart pomáha pri spotrebovaní potrebnej suroviny.
 - **Krátke efekty:** iskry, kovový záblesk, bubliny, para, zliatie a žiara podľa produktu; rozliatie, dym, prasknutie a malý výbuch pri chybe. Maximálne 10 častíc, bez externých knižníc. Animuje sa iba transformácia a priehľadnosť; obmedzený pohyb ponechá statickú odozvu.
 - Opravené opakované kliknutia počas úspechu a oneskorené dokončenie po odchode z levelu. Neplatné uložené záznamy levelov sa ignorujú.
+- **Tri prostredia:** laboratórny stôl s miskami, skúmavkami a tanierom na ľad; drevená dielnička s kartičkami na štipcoch; stredoveká kamenná dielňa s majstrom, sviečkou a mosadznými nádobami. Slama a pevné materiály ležia priamo na stole. Nádoba aj vzhľad sa zmenia podľa vyrobeného produktu. Efekty používajú ostré vektorové kontúry a dvojitý obrys výsledného medailónu.
 
 ## Spustenie a testy
 
