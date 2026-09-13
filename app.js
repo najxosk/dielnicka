@@ -160,44 +160,57 @@ function specimen(id){
  }else drawing+='<foreignObject x="20" y="26" width="80" height="65"><span xmlns="http://www.w3.org/1999/xhtml" class="loose-object">'+iconMarkup(I[id][0])+'</span></foreignObject>';
  return '<span class="specimen vessel-'+vessel+'" aria-hidden="true"><svg viewBox="0 0 120 110" class="specimenArt" fill="none" stroke-linecap="round" stroke-linejoin="round">'+drawing+'</svg></span>';
 }
-const PARTICLE={
- spark:'<path d="m16 2 3 10 11 4-11 3-3 11-4-11L2 16l10-4Z"/>',
- glow:'<path d="m16 2 4 10 10 4-10 4-4 10-4-10-10-4 10-4Z"/>',
- metal:'<path d="m16 2 4 12 10 2-10 3-4 11-3-11-11-3 11-2Z"/>',
- bubble:'<circle cx="16" cy="16" r="12"/><path d="M9 14q1-5 6-5" fill="none" stroke="white"/>',
- merge:'<path d="M16 3Q-3 23 16 29 35 23 16 3Z"/>',
- spill:'<path d="M16 3Q-3 23 16 29 35 23 16 3Z"/>',
- steam:'<path d="M8 26c-9-1-7-14 1-13-2-12 15-14 16-3 10 0 10 15 1 16Z"/>',
- smoke:'<path d="M8 26c-9-1-7-14 1-13-2-12 15-14 16-3 10 0 10 15 1 16Z"/>',
- burst:'<path d="m16 2 4 8 10-3-4 10 4 10-11-4-8 7-1-11-8-5 10-3Z"/>',
- crack:'<path d="m6 4 22 9-14 16-3-13Z"/>'
-};
-
-let finishTimer=null,effectTimer=null,settling=false,completed=false;
-function clearFeedback(){clearTimeout(finishTimer);clearTimeout(effectTimer);finishTimer=null;$('reactionFx').replaceChildren();$('reactionFx').className='reactionFx';settling=false}
+let finishTimer=null,settling=false,completed=false;
+function clearFeedback(){clearTimeout(finishTimer);finishTimer=null;settling=false}
 const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const effectFor=product=>{
- if(['bronze','brass','steel','fe','cu'].includes(product))return 'metal';
- if(['foam','suds','sparkling'].includes(product))return 'bubble';
- if(['steam','lime','slaked'].includes(product))return 'steam';
- if(['salt','rust','potash'].includes(product))return 'spark';
- if(['water','sweet','brine','lemonade','emulsion','chocolate'].includes(product))return 'merge';
- return 'glow';
-};
-function reactionFx(kind,icon){
- const box=$('reactionFx');clearTimeout(effectTimer);box.replaceChildren();box.className='reactionFx fx-'+kind;
- const core=document.createElement('span');core.className='fx-core';core.innerHTML=iconMarkup(icon);box.appendChild(core);
- if(!reducedMotion())for(let n=0;n<10;n++){const p=document.createElement('i');p.innerHTML='<svg viewBox="0 0 32 32" fill="currentColor" stroke="#35505b" stroke-width="1.8" stroke-linejoin="round">'+PARTICLE[kind]+'</svg>';p.style.setProperty('--x',Math.round(Math.cos(n*Math.PI/5)*94)+'px');p.style.setProperty('--y',Math.round(Math.sin(n*Math.PI/5)*66)+'px');p.style.setProperty('--turn',n*36+'deg');p.style.setProperty('--delay',n*14+'ms');box.appendChild(p)}
- effectTimer=setTimeout(()=>{box.replaceChildren();box.className='reactionFx'},850);
-}
-function finish(){if(settling||completed)return;settling=true;document.querySelectorAll('#tiles button').forEach(b=>b.disabled=true);finishTimer=setTimeout(win,reducedMotion()?120:720)}
-let mode='chem',level=0,board=[],sel=null,errors=0,runXp=0,lifeOdd=-1;const tr=()=>T[S.lang],nm=id=>I[id]?(S.lang==='en'?I[id][2]:I[id][1]):id,show=id=>{document.body.dataset.scene=id==='home'?'home':mode;if(id!=='play')clearFeedback();document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)},done=()=>MODES.reduce((n,m)=>n+Object.keys(S.progress[m]).length,0),stars=()=>MODES.reduce((n,m)=>n+Object.values(S.progress[m]).reduce((a,b)=>a+(Number(b.stars)||0),0),0),unlock=m=>{let u=1;while(S.progress[m][u]&&u<50)u++;return u};
+function finish(){if(settling||completed)return;settling=true;document.querySelectorAll('#tiles button').forEach(b=>b.disabled=true);finishTimer=setTimeout(win,reducedMotion()?120:280)}
+let mode='chem',level=0,board=[],sel=null,errors=0,runXp=0,lifeOdd=-1;const tr=()=>T[S.lang],nm=id=>I[id]?(S.lang==='en'?I[id][2]:I[id][1]):id,show=id=>{document.body.dataset.view=id;document.body.dataset.scene=id==='home'?'home':mode;if(id!=='play')clearFeedback();document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)},done=()=>MODES.reduce((n,m)=>n+Object.keys(S.progress[m]).length,0),stars=()=>MODES.reduce((n,m)=>n+Object.values(S.progress[m]).reduce((a,b)=>a+(Number(b.stars)||0),0),0),unlock=m=>{let u=1;while(S.progress[m][u]&&u<50)u++;return u};
 function home(){const t=tr();$('brandSub').textContent=t.sub;$('heroText').textContent=t.hero;$('doneLbl').textContent=t.done;$('starsLbl').textContent=t.stars;$('chooseTitle').textContent=t.choose;$('returnTitle').textContent=t.return;$('dailyTitle').textContent=t.daily;$('dailyText').textContent=t.dailyText;$('settingsTitle').textContent=t.lang;$('claimBtn').textContent=S.claimed===td?t.claimed:t.claim;$('claimBtn').disabled=S.claimed===td;$('streakLabel').textContent=t.streak(S.streak);$('doneStat').textContent=done()+'/150';$('starsStat').textContent=stars()+'/450';$('xpStat').textContent=S.xp;$('xpTop').textContent=S.xp;$('streakTop').textContent=S.streak;document.documentElement.lang=S.lang;$('footerNote').textContent=S.lang==='en'?'Little Alchemist v1.2 · local progress · no account':'Little Alchemist v1.2 · lokálny progres · bez účtu';$('homeBtn').setAttribute('aria-label',S.lang==='en'?'Home':'Domov');['mapBack','playBack'].forEach(id=>$(id).setAttribute('aria-label',S.lang==='en'?'Back':'Späť'));document.querySelectorAll('.langSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.lang===S.lang));const g=$('modeGrid');g.innerHTML='';MODES.forEach(m=>{const a=t.mode[m],d=Object.keys(S.progress[m]).length,b=document.createElement('button');b.className='mode';b.innerHTML='<span class="emoji">'+a[0]+'</span><span><h3>'+a[1]+'</h3><p>'+a[2]+'</p><div class="progress"><i style="width:'+(d*2)+'%"></i></div></span><span class="arrow">›</span>';b.onclick=()=>map(m);g.appendChild(b)})}
-function map(m){mode=m;const t=tr(),a=t.mode[m],p=S.progress[m];$('mapTitle').textContent=a[1];$('mapSub').textContent=t.levels;$('mapProg').style.width=(Object.keys(p).length*2)+'%';$('mapStars').innerHTML='<span class="on">★</span> '+Object.values(p).reduce((n,v)=>n+(Number(v.stars)||0),0)+'/150';const max=unlock(m),lm=$('levelMap');lm.innerHTML='';for(let i=1;i<=50;i++){const b=document.createElement('button'),x=p[i];b.className='levelbtn'+(i>max?' lock':'')+(x?' done':'');b.disabled=i>max;b.setAttribute('aria-label',(S.lang==='en'?'Level ':'Úroveň ')+i+(i>max?(S.lang==='en'?' locked':' zamknutá'):''));b.innerHTML=i+(x?'<span class="mini">'+'★'.repeat(Number(x.stars)||0)+'</span>':'');b.onclick=()=>start(m,i-1);lm.appendChild(b)}show('map')}
+
+const JOURNEY={
+ sk:{title:'Cesta za majstrovstvom',intro:'Každý objav ťa posúva bližšie k majstrovi alchýmie.',rank:'TVOJ TITUL',ranks:['Nováčik','Učeň','Objaviteľ','Alchymista','Adept majstra','Majster alchýmie'],continue:'Pokračovať',replay:'Zopakovať finále',complete:'Cesta dokončená',here:'TU SI',locked:'zamknutá',done:'dokončená',chapter:'ETAPA',reward:'Ďalší titul',
+ chapters:{chem:['Prvé iskry','Učňovská skúška','Dielňa objavov','Tajné recepty','Skúška majstra'],life:['Bystré oči','Hľadanie súvislostí','Svet okolo nás','Skryté vzory','Majster postrehu'],hard:['Vstup do cechu','Sila živlov','Staré rukopisy','Veľké premeny','Majstrovské dielo']}},
+ en:{title:'The path to mastery',intro:'Every discovery brings you closer to becoming a master alchemist.',rank:'YOUR TITLE',ranks:['Beginner','Apprentice','Discoverer','Alchemist','Master’s apprentice','Master alchemist'],continue:'Continue',replay:'Replay the finale',complete:'Journey complete',here:'YOU ARE HERE',locked:'locked',done:'completed',chapter:'CHAPTER',reward:'Next title',
+ chapters:{chem:['First sparks','The apprentice’s trial','Workshop of discovery','Secret recipes','The master’s trial'],life:['Keen eyes','Finding connections','The world around us','Hidden patterns','Master of observation'],hard:['Enter the guild','Power of the elements','Ancient manuscripts','Great transformations','The masterwork']}}
+};
+function map(m){
+ mode=m;const t=tr(),j=JOURNEY[S.lang],p=S.progress[m],max=unlock(m),finished=!!p[50]&&max===50;
+ const passed=finished?50:max-1,rank=Math.min(5,Math.floor(passed/10));
+ $('mapTitle').textContent=t.mode[m][1];$('mapSub').textContent=j.title;
+ $('mapProg').style.width=passed*2+'%';$('mapStars').innerHTML='<span class="on">★</span> '+Object.values(p).reduce((n,v)=>n+(Number(v.stars)||0),0)+'/150';
+ $('journeyTitle').textContent=j.title;$('journeyIntro').textContent=j.intro;
+ $('rankLabel').textContent=j.rank;$('journeyRank').textContent=j.ranks[rank];
+ $('journeyCount').textContent=passed+' / 50';
+ $('journeyContinue').textContent=finished?j.replay:j.continue+' · '+(S.lang==='en'?'Level ':'Úroveň ')+max;
+ $('journeyContinue').onclick=()=>start(m,max-1);
+ const lm=$('levelMap');lm.innerHTML='';
+ for(let chapter=0;chapter<5;chapter++){
+  const section=document.createElement('section'),from=chapter*10+1,to=from+9;
+  section.className='journeyChapter'+(passed>=to?' chapter-done':max>=from?' chapter-current':' chapter-locked');
+  const heading=document.createElement('div');heading.className='chapterHeading';
+  heading.innerHTML='<span class="chapterSeal" aria-hidden="true">'+['I','II','III','IV','V'][chapter]+'</span><div><small>'+j.chapter+' '+(chapter+1)+' · '+from+'–'+to+'</small><h3>'+j.chapters[m][chapter]+'</h3></div>';
+  section.appendChild(heading);
+  const route=document.createElement('div');route.className='journeyRoute';
+  route.innerHTML='<svg class="routeLine" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M10 25H90C103 25 103 75 90 75H10" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M10 25H90C103 25 103 75 90 75H10" fill="none" stroke="#d4b574" stroke-opacity=".28" stroke-dasharray="2 5" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>';
+  for(let i=from;i<=to;i++){
+   const button=document.createElement('button'),record=p[i],locked=i>max,current=i===max&&!finished,index=i-from;
+   button.className='levelbtn'+(locked?' lock':'')+(record?' done':'')+(current?' current':'');
+   button.disabled=locked;button.style.gridColumn=String(index<5?index+1:10-index);button.style.gridRow=index<5?'1':'2';
+   button.setAttribute('aria-label',(S.lang==='en'?'Level ':'Úroveň ')+i+(locked?' '+j.locked:record?' '+j.done+', '+record.stars+' ★':''));
+   if(current)button.setAttribute('aria-current','step');
+   button.innerHTML=(current?'<span class="hereLabel">'+j.here+'</span>':'')+'<span class="nodeNumber">'+i+'</span>'+(record?'<span class="mini">'+'★'.repeat(Number(record.stars)||0)+'</span>':locked?'<span class="nodeLock" aria-hidden="true"><svg viewBox="0 0 16 18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 8V5a4 4 0 0 1 8 0v3"/><rect x="2" y="8" width="12" height="9" rx="2"/></svg></span>':'');
+   button.onclick=()=>start(m,i-1);route.appendChild(button);
+  }
+  section.appendChild(route);
+  const reward=document.createElement('div');reward.className='chapterReward';reward.textContent=(passed>=to?'✓ ': '◇ ')+(passed>=to?j.ranks[chapter+1]:j.reward+': '+j.ranks[chapter+1]);section.appendChild(reward);lm.appendChild(section);
+ }
+ $('journeyEnd').textContent=(finished?'✦ '+j.complete+' · ':'✧ ')+j.ranks[5];
+ show('map');
+}
 function start(m,i){if(i<0||i>49)return;clearFeedback();completed=false;mode=m;setupScene(m);level=i;sel=null;errors=0;runXp=0;$('runXp').textContent=0;$('retryBtn').textContent=S.lang==='en'?'↻ Restart level':'↻ Začať level znova';const t=tr(),a=t.mode[m];$('playTitle').textContent=a[1];$('playSub').textContent='Level '+(i+1)+' / 50';$('goalKicker').textContent=t.goal;$('msg').className='msg';$('msg').textContent=m==='life'?t.odd:t.combine;if(m==='life'){const L=LIFE[i];lifeOdd=L.odd;board=L.items.slice();$('goalText').textContent='🧠 '+(S.lang==='en'?'Odd one out':'Čo sem nepatrí?');$('goalHint').textContent=(S.lang==='en'?'Three belong to: ':'Tri veci patria do skupiny: ')+L.rule[S.lang==='en'?1:0];renderLife()}else{const L=(m==='chem'?CHEM:ADV)[i];board=L.tiles.slice();$('goalText').innerHTML=iconMarkup(I[L.goal][0])+' '+nm(L.goal);$('goalHint').textContent=t.combine;renderAlchemy()}show('play')}
 function renderAlchemy(){const box=$('tiles');box.innerHTML='';board.forEach((id,i)=>{const b=document.createElement('button');if(!id){b.className='tile empty';b.disabled=true}else{b.className='tile'+(sel===i?' sel':'');b.setAttribute('aria-pressed',sel===i?'true':'false');b.innerHTML=specimen(id)+'<span class="n">'+nm(id)+'</span><span class="tag">'+tr().select+'</span>';b.onclick=()=>tap(i)}box.appendChild(b)})}
-function tap(i){if(settling||completed||!board[i])return;if(sel===null){sel=i;renderAlchemy();return}if(sel===i){sel=null;renderAlchemy();return}const a=board[sel],b=board[i],prod=R[[a,b].sort().join('+')];if(prod){board[sel]=prod;board[i]=null;sel=null;runXp+=4;$('runXp').textContent=runXp;$('msg').className='msg good';$('msg').textContent='✓ '+nm(a)+' + '+nm(b)+' → '+nm(prod);renderAlchemy();reactionFx(effectFor(prod),I[prod][0]);const goal=(mode==='chem'?CHEM:ADV)[level].goal;if(prod===goal)finish();else if(!solvable({goal,tiles:board.filter(Boolean)})){$('msg').textContent+=(S.lang==='en'?' · No path remains. Restart to try another order.':' · Cieľ už nie je dosiahnuteľný. Začni znova a skús iné poradie.')}}else{errors++;sel=null;$('msg').className='msg bad';$('msg').textContent=tr().wrong;renderAlchemy();const kind=['water','oil','vinegar','milk'].some(x=>x===a||x===b)?'spill':['glass','glassmix','ice'].some(x=>x===a||x===b)?'crack':['carbon','ash'].some(x=>x===a||x===b)?'smoke':'burst';reactionFx(kind,{spill:'💦',crack:'💥',smoke:'☁️',burst:'💥'}[kind])}}
-function renderLife(){const box=$('tiles');box.innerHTML='';board.forEach((pair,i)=>{const b=document.createElement('button');b.className='tile';b.innerHTML='<span class="e" aria-hidden="true">'+iconMarkup(pair[2])+'</span><span class="n">'+pair[S.lang==='en'?1:0]+'</span>';b.onclick=()=>{if(settling||completed||b.disabled)return;if(i===lifeOdd){runXp+=6;$('runXp').textContent=runXp;$('msg').className='msg good';$('msg').textContent=(S.lang==='en'?'Correct! The other three belong to: ':'Správne! Ostatné tri patria do skupiny: ')+LIFE[level].rule[S.lang==='en'?1:0];reactionFx('glow',pair[2]);finish()}else{errors++;b.disabled=true;b.classList.add('tried');$('msg').className='msg bad';$('msg').textContent=tr().wrongOdd;reactionFx('smoke','☁️')}};box.appendChild(b)})}
+function tap(i){if(settling||completed||!board[i])return;if(sel===null){sel=i;renderAlchemy();return}if(sel===i){sel=null;renderAlchemy();return}const a=board[sel],b=board[i],prod=R[[a,b].sort().join('+')];if(prod){board[sel]=prod;board[i]=null;sel=null;runXp+=4;$('runXp').textContent=runXp;$('msg').className='msg good';$('msg').textContent='✓ '+nm(a)+' + '+nm(b)+' → '+nm(prod);renderAlchemy();const goal=(mode==='chem'?CHEM:ADV)[level].goal;if(prod===goal)finish();else if(!solvable({goal,tiles:board.filter(Boolean)})){$('msg').textContent+=(S.lang==='en'?' · No path remains. Restart to try another order.':' · Cieľ už nie je dosiahnuteľný. Začni znova a skús iné poradie.')}}else{errors++;sel=null;$('msg').className='msg bad';$('msg').textContent=tr().wrong;renderAlchemy();}}
+function renderLife(){const box=$('tiles');box.innerHTML='';board.forEach((pair,i)=>{const b=document.createElement('button');b.className='tile';b.innerHTML='<span class="e" aria-hidden="true">'+iconMarkup(pair[2])+'</span><span class="n">'+pair[S.lang==='en'?1:0]+'</span>';b.onclick=()=>{if(settling||completed||b.disabled)return;if(i===lifeOdd){runXp+=6;$('runXp').textContent=runXp;$('msg').className='msg good';$('msg').textContent=(S.lang==='en'?'Correct! The other three belong to: ':'Správne! Ostatné tri patria do skupiny: ')+LIFE[level].rule[S.lang==='en'?1:0];finish()}else{errors++;b.disabled=true;b.classList.add('tried');$('msg').className='msg bad';$('msg').textContent=tr().wrongOdd;}};box.appendChild(b)})}
 function win(){if(completed)return;completed=true;const st=errors===0?3:errors<=2?2:1,idx=level+1,old=S.progress[mode][idx],oldStars=old?Number(old.stars)||0:0,first=!old,improved=Math.max(0,st-oldStars),earned=(first?15+runXp:0)+improved*5;if(!old||st>oldStars)S.progress[mode][idx]={stars:Math.max(st,oldStars)};S.xp+=earned;save();$('xpTop').textContent=S.xp;$('resultTitle').textContent=tr().doneLevel;$('resultStars').innerHTML=[1,2,3].map(n=>'<span class="'+(n<=st?'on':'')+'">★</span>').join('');$('resultOrb').innerHTML=iconMarkup(mode==='life'?LIFE[level].items[lifeOdd][2]:I[(mode==='chem'?CHEM:ADV)[level].goal][0]);$('resultText').textContent=(earned?('+'+earned+' XP · '):'')+(errors===0?tr().perfect:tr().mistakes+errors);$('resultMap').textContent=tr().map;$('resultNext').textContent=tr().next;$('resultNext').disabled=level>=49;show('result')}
 $('retryBtn').onclick=()=>start(mode,level);
 $('homeBtn').onclick=()=>{home();show('home')};$('mapBack').onclick=()=>{home();show('home')};$('playBack').onclick=()=>map(mode);$('resultMap').onclick=()=>map(mode);$('resultNext').onclick=()=>level<49&&start(mode,level+1);$('claimBtn').onclick=()=>{if(S.claimed===td)return;S.xp+=20+Math.min(80,S.streak*5);S.claimed=td;save();home()};document.querySelectorAll('.langSwitch button').forEach(b=>b.onclick=()=>{S.lang=b.dataset.lang;save();home()});home();})();

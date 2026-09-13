@@ -13,18 +13,19 @@ Dátum: 2026-09-13. Lokálne prostredie: Windows, Node.js, Playwright 1.62.1, na
 | Gameplay 1/5/10/20/30/40/50 | Všetky tri režimy, oba jazyky: 42 úspešných scenárov |
 | Progres | Skutočné odomknutie levelu 2, reload, kompatibilita starého uloženia a ignorovanie neplatných záznamov |
 | XP | Rovnaký výsledok pri opakovaní levelu nepridáva XP |
-| Efekty | Všetkých šesť úspešných aj štyri chybové typy overené cez hranie |
-| Časovače | Odchod počas úspechu nevráti hráča na výsledok; reštart zruší čakajúce dokončenie; častice sa odstránia |
+| Pokojné hranie | Stredový overlay chýba pri úspechu aj neplatnej kombinácii; výsledok a textová správa fungujú |
+| Cesta k majstrovi | Päť etáp, tmavé pozadie, správny aktuálny level, odomykanie a tlačidlo Pokračovať |
+| Časovače | Odchod počas úspechu nevráti hráča na výsledok; reštart zruší čakajúce dokončenie |
 | Slepá kombinácia | Zobrazí odporúčanie reštartu; po reštarte je level opäť riešiteľný |
 | Obmedzený pohyb | Bez častíc; dokončenie funguje |
 | Šírky | 320, 390, 768, 1280 px; bez horizontálneho pretekania, všetky tri režimy a domovská obrazovka |
 | Chyby prehliadača | Žiadne nezachytené chyby počas testov |
 
-Vizuálne prezreté screenshoty mobilného domova, Pre život, Majstra a bublinového efektu. Nájdené chýbajúce znaky novších emoji boli nahradené vstavanými SVG; následná kontrola potvrdila zobrazenie rudy a bublín. Doplnili sa menšie rozostupy hornej lišty pri 320 px, zalamovanie dlhej položky, viditeľný fokus a minimálna veľkosť navigačných tlačidiel.
+Vizuálne prezreté screenshoty mobilného domova, Pre život, Majstra a novej tmavej mapy cesty. Nájdené chýbajúce znaky novších emoji boli nahradené vstavanými SVG; následná kontrola potvrdila zobrazenie rudy a bublín. Doplnili sa menšie rozostupy hornej lišty pri 320 px, zalamovanie dlhej položky, viditeľný fokus a minimálna veľkosť navigačných tlačidiel.
 
 ## Automatizácia a hranice
 
-Vizuálna aktualizácia po spätnej väzbe: tri odlišné scény, nádoby podľa suroviny a vektorové obrysy efektov. Rozšírený prehliadačový test kontroluje misku (level 4), tanier na ľad (6), slamu na stole (12), skúmavky (18) a prepínanie laboratória, drevenej dielničky a stredovekej scény. Doplnkové screenshoty: `lab-materials-*.png`, `medieval-master.png`, `pegged-cards.png`.
+Vizuálna aktualizácia po spätnej väzbe: tri odlišné scény, nádoby podľa suroviny, tmavá mapa s piatimi etapami a odstránené stredové efekty. Rozšírený prehliadačový test kontroluje misku (level 4), tanier na ľad (6), slamu na stole (12), skúmavky (18) a prepínanie laboratória, drevenej dielničky a stredovekej scény. Doplnkové screenshoty: `lab-materials-*.png`, `medieval-master.png`, `pegged-cards.png`, `journey-map-*.png`.
 
 `npm test` a `npm run test:browser` prešli lokálne. GitHub Actions spúšťa obe sady na Linuxe s Chromium a ukladá screenshoty. Stav konkrétneho behu na odoslanom commite je v kontrolách PR.
 

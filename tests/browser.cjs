@@ -28,11 +28,24 @@ async function main(){
  try{
   await page.goto(url);
   await page.locator('#modeGrid .mode').first().click();assert.equal(await page.locator('#levelMap button:disabled').count(),49);
+  assert.equal(await page.locator('.journeyChapter').count(),5);
+  assert.equal(await page.locator('#levelMap [aria-current="step"]').textContent(),'TU SI1');
+  assert.equal(await page.locator('body').getAttribute('data-view'),'map');
+  for(const width of [320,390,768,1280]){
+   await page.setViewportSize({width,height:844});await noOverflow();
+   const background=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor);assert.equal(background,'rgb(16, 30, 35)');
+   await page.screenshot({path:path.join(out,'journey-map-'+width+'.png'),fullPage:true});
+  }
+  await page.setViewportSize({width:390,height:844});
   // Genuine progression, XP anti-farming, reload, next-level unlock.
   await page.locator('#levelMap button').first().click();await craft('chem',1,'sk');
   await page.waitForSelector('#result.on');const firstXp=await page.locator('#xpTop').textContent();
   await open('chem',1);await craft('chem',1,'sk');await page.waitForSelector('#result.on');assert.equal(await page.locator('#xpTop').textContent(),firstXp);
   await page.reload();await page.locator('#modeGrid .mode').first().click();assert.equal(await page.locator('#levelMap button:disabled').count(),48);
+  assert.equal(await page.locator('#levelMap [aria-current="step"] .nodeNumber').textContent(),'2');
+  await page.locator('#journeyContinue').click();assert((await page.locator('#playSub').textContent()).includes('2 / 50'));
+  await home();
+
   // Seed a legacy-format save to make representative levels accessible via the real map.
   await page.evaluate(()=>{const p={chem:{},life:{},hard:{}};for(const m in p)for(let n=1;n<=50;n++)p[m][n]={stars:1};localStorage.setItem('little_alchemist_v1',JSON.stringify({xp:123,lang:'sk',progress:p}))});await page.reload();
   let count=0;
@@ -42,7 +55,7 @@ async function main(){
     await open(mode,n);await noOverflow();
     if(mode==='life'){
      assert(!(await page.locator('#tiles').textContent()).includes('❓'));
-     if(n===1){await page.locator('#tiles button').nth((d.LIFE[n-1].odd+1)%4).click();assert(await page.locator('#reactionFx').getAttribute('class').then(c=>c.includes('smoke')))}
+     if(n===1){await page.locator('#tiles button').nth((d.LIFE[n-1].odd+1)%4).click();assert.equal(await page.locator('#reactionFx,.fx-core').count(),0)}
      await page.locator('#tiles button').nth(d.LIFE[n-1].odd).click();
     }else await craft(mode,n,lang);
     await page.waitForSelector('#result.on');assert.equal(await page.locator('#resultNext').isDisabled(),n===50);await noOverflow();count++;
@@ -53,7 +66,7 @@ async function main(){
   // Rapid final clicks award once, and retry cancels pending completion.
   await open('life',2);await page.locator('#tiles button').nth(d.LIFE[1].odd).evaluate(b=>{b.click();b.click();b.click()});
   await page.locator('#retryBtn').click();await page.waitForTimeout(900);assert(await page.locator('#play.on').isVisible());
-  // Wrong recipes and particle cleanup.
+  // Wrong recipes give text feedback without an overlay.
   await open('chem',5);
   const tiles=d.CHEM[4].tiles;let wrong;
   for(let i=0;i<tiles.length;i++)for(let j=i+1;j<tiles.length;j++)if(!d.R[[tiles[i],tiles[j]].sort().join('+')])wrong=[i,j];
@@ -67,7 +80,7 @@ async function main(){
    }
    assert(sample,'no sample for '+kind);await open('chem',sample.n);
    await page.locator('#tiles button').nth(sample.i).click();await page.locator('#tiles button').nth(sample.j).click();
-   assert((await page.locator('#reactionFx').getAttribute('class')).includes('fx-'+kind));assert(await page.locator('#msg.bad').isVisible());
+   assert.equal(await page.locator('#reactionFx,.fx-core').count(),0);assert(await page.locator('#msg.bad').isVisible());
   }
   // A legal but unhelpful reaction can consume a required ingredient; restart recovers.
   let deadEnd;
@@ -84,7 +97,7 @@ async function main(){
    await page.setViewportSize({width,height:844});await home();await noOverflow();await page.screenshot({path:path.join(out,'home-'+width+'.png'),fullPage:true});
    for(const mode of ['chem','life','hard']){await open(mode,50);await noOverflow();await page.screenshot({path:path.join(out,mode+'-'+width+'.png'),fullPage:true})}
   }
-  // All six success families and four failure shapes are exercised through gameplay.
+  // Successful reactions remain unobstructed.
   await page.setViewportSize({width:390,height:844});
   // Material-aware vessels and the three distinct scenes remain visible on touch screens.
   for(const [n,vessel] of [[4,'bowl'],[6,'plate'],[12,'table'],[18,'tube']]){
@@ -96,19 +109,16 @@ async function main(){
   await page.screenshot({path:path.join(out,'medieval-master.png'),fullPage:true});
   await open('life',1);assert.equal(await page.locator('body').getAttribute('data-scene'),'life');
   await page.screenshot({path:path.join(out,'pegged-cards.png'),fullPage:true});
-  for(const [n,kind] of [[1,'merge'],[2,'metal'],[3,'bubble'],[4,'glow'],[6,'merge'],[9,'spark'],[14,'steam']]){
-   await open('chem',n);await craft('chem',n,'en');assert((await page.locator('#reactionFx').getAttribute('class')).includes('fx-'+kind));
-   if(kind==='bubble'){
-    await page.evaluate(()=>document.getAnimations().forEach(a=>{a.pause();a.currentTime=220}));
-    await page.screenshot({path:path.join(out,'effect-bubbles.png')});
-   }await page.waitForSelector('#result.on');
+  for(const n of [1,2,3,4,6,9,14]){
+   await open('chem',n);await craft('chem',n,'en');assert.equal(await page.locator('#reactionFx,.fx-core').count(),0);
+   await page.waitForSelector('#result.on');
   }
   await page.emulateMedia({reducedMotion:'reduce'});await open('chem',1);await craft('chem',1,'en');await page.waitForSelector('#result.on');
   assert.equal(await page.locator('#reactionFx i').count(),0);
   // Corrupt storage must not crash the UI.
   await page.evaluate(()=>localStorage.setItem('little_alchemist_v1','{"progress":{"chem":{"1":null,"2":{"stars":99}}}}'));await page.reload();assert(await page.locator('#home.on').isVisible());
   assert.deepEqual(errors,[]);
-  console.log('PASS: '+count+' representative level/language runs; real unlock/reload/XP; navigation cancellation; retry; effects; reduced motion; widths 320/390/768/1280; no page errors.');
+  console.log('PASS: '+count+' representative level/language runs; real unlock/reload/XP; navigation cancellation; retry; no reaction overlays; journey map; reduced motion; widths 320/390/768/1280; no page errors.');
  }finally{await browser.close();server.close()}
 }
 main().catch(e=>{console.error(e);server.close();process.exitCode=1});

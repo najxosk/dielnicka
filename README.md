@@ -7,9 +7,11 @@ Vzdelávacia hra pre mobil aj desktop: **150 levelov**, SK/EN, bez účtu a back
 - **Chémia (50 levelov):** 33 rôznych úvodných receptov, potom rozostúpené návraty s väčším výberom surovín. Prvých 25 levelov neopakuje recept. Všetkých 50 strieda rodiny úloh: roztoky, kovy, farby, reakcie, materiály, teplo, plyn, pena a recyklácia. Obtiažnosť rastie od dvoch po šesť dlaždíc.
 - **Pre život (50 levelov):** 30 pomenovaných kategórií, každá s piatimi členmi a ručne zvolenou odlišnou položkou. 50 jedinečných štvoríc; prvých 30 levelov predstaví všetky kategórie. Témy zahŕňajú more, stanovanie, záchranárstvo, umenie, čas, záhradu či vesmír. Každá položka má emoji alebo vstavanú vektorovú ikonu a text v SK/EN. Nápoveda pomenúva spoločnú skupinu, aby odpoveď nebola nejednoznačná.
 - **Majster alchýmie (50 levelov):** zachované viackrokové recepty a odomykanie; nový reštart pomáha pri spotrebovaní potrebnej suroviny.
-- **Krátke efekty:** iskry, kovový záblesk, bubliny, para, zliatie a žiara podľa produktu; rozliatie, dym, prasknutie a malý výbuch pri chybe. Maximálne 10 častíc, bez externých knižníc. Animuje sa iba transformácia a priehľadnosť; obmedzený pohyb ponechá statickú odozvu.
+- **Pokojnejšie hranie:** stredové efekty pri úspechu aj chybe sú odstránené. Výsledok sa zobrazí priamo na stole a v textovej správe; hernú plochu nič nezakrýva.
 - Opravené opakované kliknutia počas úspechu a oneskorené dokončenie po odchode z levelu. Neplatné uložené záznamy levelov sa ignorujú.
-- **Tri prostredia:** laboratórny stôl s miskami, skúmavkami a tanierom na ľad; drevená dielnička s kartičkami na štipcoch; stredoveká kamenná dielňa s majstrom, sviečkou a mosadznými nádobami. Slama a pevné materiály ležia priamo na stole. Nádoba aj vzhľad sa zmenia podľa vyrobeného produktu. Efekty používajú ostré vektorové kontúry a dvojitý obrys výsledného medailónu.
+- **Tri prostredia:** laboratórny stôl s miskami, skúmavkami a tanierom na ľad; drevená dielnička s kartičkami na štipcoch; stredoveká kamenná dielňa s majstrom, sviečkou a mosadznými nádobami. Slama a pevné materiály ležia priamo na stole. Nádoba aj vzhľad sa zmenia podľa vyrobeného produktu.
+
+- **Cesta za majstrovstvom:** tmavá mapa s nočnou krajinou, piatimi etapami po desať levelov, postupnými titulmi a vinúcou sa cestou. Zvýrazňuje najbližší odomknutý level a ponúka tlačidlo Pokračovať. Hviezdy, číslovanie a pravidlá odomykania zostávajú zachované.
 
 ## Spustenie a testy
 
@@ -24,7 +26,7 @@ npm run test:browser
 
 Obsahové testy overujú syntax, 50/50/50 levelov, riešiteľnosť všetkých 100 alchymistických levelov nezávislým solverom, rozmanitosť, SK/EN/ikonky a kompatibilitu progresu.
 
-Prehliadačový test hrá levely **1/5/10/20/30/40/50 vo všetkých režimoch a oboch jazykoch** (42 scenárov). Overuje odomykanie, reload, XP, zrušenie čakajúceho dokončenia, reštart, úspešné aj chybové efekty a obmedzený pohyb. Kontroluje šírky **320, 390, 768 a 1280 px** a ukladá screenshoty do `test-results/`. GitHub Actions spúšťa obe sady a priloží screenshoty ako artefakt.
+Prehliadačový test hrá levely **1/5/10/20/30/40/50 vo všetkých režimoch a oboch jazykoch** (42 scenárov). Overuje odomykanie, reload, XP, zrušenie čakajúceho dokončenia, reštart, neprítomnosť stredových efektov, tmavú mapu a pokračovanie v ceste a obmedzený pohyb. Kontroluje šírky **320, 390, 768 a 1280 px** a ukladá screenshoty do `test-results/`. GitHub Actions spúšťa obe sady a priloží screenshoty ako artefakt.
 
 Lokálne overené na Windows v Chrome s emuláciou dotykového mobilu. Emulácia nenahrádza test na fyzickom telefóne ani Safari/iOS. Výsledky sú v [QA-v1.2.md](QA-v1.2.md).
 
@@ -34,7 +36,7 @@ Kľúč `localStorage` zostáva **little_alchemist_v1**. Dokončené levely, hvi
 
 ## Súbory
 
-- `app.js` — obsah, pravidlá, progres, vstavané ikony a efekty
+- `app.js` — obsah, pravidlá, progres, vstavané ikony a mapa cesty
 - `index.html`, `little-alchemist-v1.css` — responzívne rozhranie
 - `tests/content.cjs`, `tests/browser.cjs` — regresné testy
 - `.github/workflows/little-alchemist-check.yml` — automatické kontroly
