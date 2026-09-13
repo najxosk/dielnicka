@@ -1,44 +1,36 @@
-# AI-BRIEFING — Little Alchemist (dielnicka)
+# AI-BRIEFING — Little Alchemist
 
-> Toto je zadanie pre AI. **Prečítaj celé, potom urob prvý nehotový krok.**
-> Píšeme po slovensky, jednoducho a k veci.
+## Projekt
+Oficiálny názov: **Little Alchemist**
 
-- **Projekt:** Little Alchemist (dielnicka) · **Repo:** https://github.com/najxosk/dielnicka
-- **Hrá sa tu:** https://najxosk.github.io/dielnicka/
-- **Vypracoval (dispečer):** Hermes · **Dátum:** 13. 9. 2026
-- **Rola:** zvládne to ktorákoľvek AI (je to jedna HTML hra, jeden súbor)
+Aktívna verzia: **1.1**
 
-## Cieľ tejto dávky
-**Rozšíriť hru „📚 Skúšobňa"** — pridať nové úlohy do všetkých troch častí, aby sa z nej dalo učiť dlhšie.
+## Aktuálny stav
+- 150 levelov: 50 Chémia + 50 Pre život + 50 Majster alchýmie
+- SK + EN
+- progres, hviezdy, XP, denný streak a denná odmena
+- progres je v `localStorage`
+- hlavná logika je v `app.js`
+- UI je v `index.html`
+- štýly sú v `little-alchemist-v1.css`
+- CI je v `.github/workflows/little-alchemist-check.yml`
 
-## Kroky (odškrtávaj!)
-- [ ] 1. Otvor `index.html` a nájdi časť `SKT` (vzhľad dlaždíc), `SKRECIPES` (čo s čím spájať), `SKCHEM` (úlohy Chémie), `SKNAR` (Náročná), `SKZIVOT` (čo nepatrí).
-- [ ] 2. Pridaj **5 nových úloh do `SKCHEM`** (Chémia). Pravidlo: každá musí byť **skutočná chémia** a každá nová kombinácia musí mať záznam v `SKT` aj v `SKRECIPES`. Príklady, ktoré už recepty majú: `zmes` = piesok + potaš, `sklovina` = zmes + vápenec, `blato` = hlina + voda.
-- [ ] 3. Pridaj **3 nové úlohy do `SKNAR`** (Náročná) — musia byť **viackrokové** (najprv medziprodukt, potom z neho hotová vec).
-- [ ] 4. Pridaj **4 nové úlohy do `SKZIVOT`** (Pre život) v tvare `{a:[štyri veci], z:3}` — tri patria k sebe, jedna nie.
-- [ ] 5. Všetky nové úlohy **otestuj na telefónnej veľkosti 390×844** a over, že hra sa načíta a nič nespadne.
-- [ ] 6. Doplň do `NEXUS-STATUS.md` nový počet úloh v Skúšobni.
+## Dôležité pravidlá
+- nerozbíjať 50/50/50 levelov
+- každý chemický a náročný level musí zostať riešiteľný
+- zachovať SK aj EN
+- zachovať mobilné ovládanie dotykom
+- žiadny účet ani platený backend
+- pri zmene progresu zachovať kompatibilitu so starším `localStorage`
+- názov hry je iba **Little Alchemist**; nepoužívať starý pracovný názov ako branding
 
-## Podľa čoho sa pozná, že je hotovo
-- Hra sa načíta (lokálne aj na https://najxosk.github.io/dielnicka/).
-- V Skúšobni je **viac úloh** vo všetkých troch častiach a všetky sa dajú vyriešiť.
-- Každá nová kombinácia je **skutočná chémia** a má záznam v `SKT` aj `SKRECIPES`.
-- Testované na mobilnej veľkosti, nie len na počítači.
+## Najbližšia administratívna úloha
+Premenovať GitHub repository slug z pôvodného názvu na **`Little-Alchemist`**, potom overiť GitHub Pages URL a aktualizovať odkazy v Project Nexus.
 
-## Kde sú dôležité súbory
-- `index.html` — celá hra (všetko v jednom súbore)
-- `README.md` — ako hru upraviť a ako pridať úlohu
-- `NEXUS-STATUS.md` — stav projektu (percentá, ďalší krok)
-
-## Čo NEROBIŤ
-- **Nemeň** existujúce úlohy ani hlavných 8 kôl hry — tie sú hotové a otestované.
-- **Nepresúvaj** súbory (`index.html` musí ostať v koreni — je to hra na webe).
-- **Nedávaj** do úloh nereálnu chémiu (napr. „voda + oheň = para" bez vysvetlenia nie je zlúčenina).
-- **Neposielaj na GitHub** nič, čo nie je v krokoch.
-- Kľúče v `SKT`, `SKRECIPES` a v úlohách musia byť **identické a bez diakritiky** (`med`, `cin`, `sol`), inak sa dlaždica nevykreslí.
-
-## Keď dôjde limit (handoff)
-Na koniec tohto súboru dopíš:
-- **Hotové:** …
-- **Skondilo sa pri:** …
-- **Ďalší krok:** …
+## Test pred každým merge
+1. `node --check app.js`
+2. overiť 50 + 50 + 50 levelov
+3. overiť prvý, stredný a posledný level každej cesty
+4. overiť prepnutie SK/EN
+5. overiť návrat po reloadnutí stránky
+6. overiť mobilnú šírku približne 390 px
