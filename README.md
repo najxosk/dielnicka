@@ -1,10 +1,10 @@
 # ⚗️ Little Alchemist
 
-**Little Alchemist** je oficiálny názov projektu (pôvodný pracovný názov repozitára `dielnicka` zostáva kvôli stabilnému GitHub Pages odkazu).
+**Little Alchemist** je oficiálny názov hry.
 
-Hra je mobilná aj desktopová webová hra bez účtu. Progres sa ukladá lokálne v prehliadači.
+Mobilná aj desktopová webová hra bez účtu. Progres sa ukladá lokálne v prehliadači a hra nepotrebuje backend.
 
-## Verzia 1.0
+## Verzia 1.1
 
 - **150 levelov celkom**
   - 🧪 Chémia — 50 levelov
@@ -12,13 +12,13 @@ Hra je mobilná aj desktopová webová hra bez účtu. Progres sa ukladá lokál
   - 🔥 Majster alchýmie — 50 levelov
 - postupné odomykanie levelov
 - 1–3 hviezdy podľa chýb
-- XP a denná návratová odmena
-- streak za pravidelné návraty
+- XP bez nekonečného farmenia opakovaním rovnakého výsledku
+- denná návratová odmena a streak podľa miestneho dátumu hráča
+- robustnejšie obnovenie poškodeného alebo staršieho `localStorage`
 - slovenské aj anglické rozhranie a obsah
-- nový vizuál navrhnutý primárne pre telefón
-- fungovanie bez účtu a bez backendu
-
-**Hrať:** https://najxosk.github.io/dielnicka/
+- responzívny vizuál pre telefón aj desktop
+- automatická kontrola JavaScript syntaxe a základnej štruktúry
+- validácia, že všetkých 50 chemických a 50 náročných levelov je riešiteľných
 
 ## Herné cesty
 
@@ -26,31 +26,24 @@ Hra je mobilná aj desktopová webová hra bez účtu. Progres sa ukladá lokál
 Hráč spája dve látky alebo materiály a vyrába cieľ. Obtiažnosť rastie pridávaním rušivých možností a širšou paletou receptov.
 
 ### 🌿 Pre život
-Logická hra „čo nepatrí“. Každý level obsahuje tri položky z jednej kategórie a jednu odlišnú. Obsah sa skladá deterministicky z viacerých kategórií v slovenčine aj angličtine.
+Logická hra „čo nepatrí“. Každý level obsahuje tri položky z jednej kategórie a jednu odlišnú. Obsah je v slovenčine aj angličtine.
 
 ### 🔥 Majster alchýmie
 Viackrokové recepty. Hráč musí najprv vyrobiť medziprodukt a až potom cieľ, napr. ruda → kov → zliatina alebo vápnik → vápno → hasené vápno → malta.
 
-## Progres a návrat hráča
+## Progres
 
-Hra používa iba `localStorage`. Ukladá:
-- dokončené levely,
-- najlepšie hviezdy,
-- XP,
-- jazyk,
-- denný streak a dennú odmenu.
-
-Nie je potrebný účet, analytika ani platená služba.
+Hra používa iba `localStorage`. Ukladá dokončené levely, najlepšie hviezdy, XP, jazyk, streak a dennú odmenu.
 
 ## Súbory
 
-- `index.html` — hlavná obrazovka a herné UI
+- `index.html` — hlavné UI
 - `little-alchemist-v1.css` — vizuál a responzívne rozloženie
-- `little-alchemist-v1.js` — herná logika, recepty a generovanie 150 levelov
-- `.github/workflows/little-alchemist-check.yml` — automatická kontrola JavaScript syntaxe a základných súborov
+- `app.js` — herná logika, recepty, 150 levelov, progres a validácia
+- `.github/workflows/little-alchemist-check.yml` — automatické kontroly
 
-## Vývoj
+## Repozitár
 
-Aktívna verzia 1.0 vznikla z pôvodného prototypu Dielnička/Skúšobňa. Starý názov `dielnicka` sa už nepoužíva ako názov hry; ostáva iba v URL repozitára, aby sa nerozbili existujúce odkazy.
+Cieľový názov repozitára je **`Little-Alchemist`**. GitHub URL nepoužíva medzery, preto je spojovník správny tvar. Po premenovaní treba overiť nový GitHub Pages projektový odkaz a aktualizovať odkazy v Project Nexus.
 
 Pri chemických a výrobných receptoch ide o zjednodušený vzdelávací model vhodný pre hru; nejde o laboratórny postup ani bezpečnostný návod.
