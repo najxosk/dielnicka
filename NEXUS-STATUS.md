@@ -1,31 +1,33 @@
-# dielnicka (Little Alchemist)
+# Little Alchemist
 
 ## O projekte
-Malá webová hra v jednom súbore: skladanie reálnych vecí z reálnych surovín podľa skutočnej fyziky a chémie.
-8 kôl (voda, soľ, tehla, betón, sklo, vápno a malta, bronz, oceľ), slovenčina + angličtina.
-Súčasťou je **📚 Skúšobňa** — tri hry na učenie: spájanie prvkov (Chémia), „čo nepatrí" (Pre život), náročné spájanie.
+Oficiálny názov hry je **Little Alchemist**. Repozitár sa zatiaľ volá `dielnicka`, aby zostal funkčný existujúci GitHub Pages odkaz.
+
+Little Alchemist je mobilná/desktopová vzdelávacia hra s tromi cestami a lokálnym progresom.
 
 ## Stav
-Hrateľné · na webe
+Verzia **1.0 pripravená na nasadenie**.
 
-## Ako pokračovať
-Hrať: https://najxosk.github.io/dielnicka/ · Repo: https://github.com/najxosk/dielnicka
-Ďalší krok: doplniť úlohy v Skúšobni a neskôr angličtinu.
+- 🧪 Chémia: 50 levelov
+- 🌿 Pre život: 50 levelov
+- 🔥 Majster alchýmie: 50 levelov
+- spolu: 150 levelov
+- SK + EN
+- hviezdy, XP, postupné odomykanie
+- denný streak a denná odmena
+- nový responzívny vizuál
+- automatická kontrola JavaScript syntaxe v GitHub Actions
 
-GitHub: https://github.com/najxosk/dielnicka
-Lokálny priečinok: C:\Users\Verdili\Documents\Dielnicka
+Hrať po nasadení na `main`: https://najxosk.github.io/dielnicka/
 
 ```nexus-state
 {
-  "name": "dielnicka",
-  "description": "Little Alchemist — webova hra o skladani veci podla skutocnej chemie (8 kol, SK/EN) + Skusobna (tri hry na ucenie).",
+  "name": "Little Alchemist",
+  "description": "Little Alchemist — mobilna vzdelavacia alchymisticka hra. 150 levelov v troch cestach: Chemia, Pre zivot a Majster alchymie.",
   "status": "active",
-  "progress": 95,
-  "missing": [
-    "Doplnit dalsie ulohy v Skusobni",
-    "Neskor pridat anglictinu do Skusobne"
-  ],
-  "nextStep": "Hrat na https://najxosk.github.io/dielnicka/ a povedat, ktore casti Skusobne doplnit.",
-  "notes": "Skusobna je integrovana v hre (tlacidlo v uvodnej ponuke). Data: SKT, SKRECIPES, SKCHEM, SKNAR, SKZIVOT."
+  "progress": 100,
+  "missing": [],
+  "nextStep": "Hrat a zbierat spätú väzbu pre buducu verziu 1.1.",
+  "notes": "v1.0: 50+50+50 levelov, SK/EN, hviezdy, XP, streak, denny bonus, localStorage progres, novy mobilny vizual. Repozitar ostava dielnicka iba kvoli stabilnej URL."
 }
 ```
