@@ -1,0 +1,12 @@
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'..');
+const css=fs.readFileSync(path.join(root,'little-alchemist-v1.css'),'utf8');
+const js=fs.readFileSync(path.join(root,'app.js'),'utf8');
+new vm.Script(js);
+let html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+html=html.replace('<link rel="stylesheet" href="little-alchemist-v1.css">','<style>\n'+css.replace(/<\/style/gi,'<\\/style')+'\n</style>');
+html=html.replace('<script src="app.js"></script>','<script>\n'+js.replace(/<\/script/gi,'<\\/script')+'\n</script>');
+if(/<(?:script|link)\b[^>]*(?:src|href)=/i.test(html))throw new Error('External dependency remains');
+const out=path.join(__dirname,'../offline/Little-Alchemist-v1.2-offline.html');
+fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,html);
+console.log(out+' ('+Buffer.byteLength(html)+' bytes)');

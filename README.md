@@ -15,6 +15,12 @@ Vzdelávacia hra pre mobil aj desktop: **150 levelov**, SK/EN, bez účtu a back
 
 ## Spustenie a testy
 
+### Samostatná offline hra
+
+Celá hra v jednom súbore: [Little-Alchemist-v1.2-offline.html](offline/Little-Alchemist-v1.2-offline.html). Stiahnite súbor a otvorte ho v prehliadači. Nepotrebuje server ani internet; dostupnosť otvorenia lokálneho HTML závisí od mobilného prehliadača. Progres sa medzi zariadeniami automaticky neprenáša.
+
+Po zmene zdrojov spustite `npm run build:offline` a commitnite aj aktualizovaný súbor v `offline/`. `npm run test:offline` overuje všetky tri režimy, reload progresu a jazyk pri vypnutej sieti.
+
 Otvorte `index.html` alebo priečinok sprístupnite statickým serverom. Herná aplikácia nemá runtime závislosti. Testovacie nástroje sa nenačítavajú do hry.
 
 ```sh
