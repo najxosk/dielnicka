@@ -1,35 +1,19 @@
 # Little Alchemist
 
-## O projekte
-Oficiálny názov hry je **Little Alchemist**. Cieľový názov GitHub repozitára je `Little-Alchemist`.
+## Stav v1.2
 
-Little Alchemist je mobilná/desktopová vzdelávacia hra s tromi cestami a lokálnym progresom.
+Implementované: 50 Chémia + 50 Pre život + 50 Majster alchýmie, 33 rôznych úvodných receptov, 30 kategórií s 50 jedinečnými otázkami, tri prostredia a ikony. Zachované SK/EN, lokálny progres, hviezdy, XP a odomykanie. Opravené časovače dokončenia, opakované kliknutia a poškodené záznamy progresu; doplnený reštart pri slepej kombinácii.
 
-## Stav
-Verzia **1.1 stabilizovaná**.
-
-- 🧪 Chémia: 50 levelov
-- 🌿 Pre život: 50 levelov
-- 🔥 Majster alchýmie: 50 levelov
-- spolu: 150 levelov
-- SK + EN
-- hviezdy, XP, postupné odomykanie
-- denný streak podľa lokálneho dátumu
-- denná odmena
-- opravené načítanie staršieho/poškodeného progresu
-- odstránené nekonečné XP farmenie opakovaním levelu
-- validácia riešiteľnosti levelov
-- responzívny vizuál a základná prístupnosť
-- GitHub Actions kontroluje živý `app.js`
+Lokálne prešli obsahové testy vrátane riešiteľnosti všetkých 100 alchymistických levelov a scenáre 1/5/10/20/30/40/50 vo všetkých režimoch, v SK aj EN. Rozloženie overované na 320/390/768/1280 px. Podrobnosti: QA-v1.2.md. Pripravené na kontrolu a merge; nasadenie ani fyzický telefón sa týmto neoznačujú za overené.
 
 ```nexus-state
 {
   "name": "Little Alchemist",
-  "description": "Little Alchemist — mobilna vzdelavacia alchymisticka hra. 150 levelov v troch cestach: Chemia, Pre zivot a Majster alchymie.",
+  "description": "Vzdelávacia alchymistická hra: 150 levelov v troch cestách, SK/EN, 30 kategórií logiky a cestu k majstrovi.",
   "status": "active",
   "progress": 100,
-  "missing": ["Premenovat GitHub repository slug na Little-Alchemist a overit GitHub Pages URL"],
-  "nextStep": "Premenovat repository slug v GitHub Settings a potom aktualizovat odkazy v Project Nexus.",
-  "notes": "v1.1: 50+50+50 levelov, SK/EN, hviezdy, XP, local-time streak, denny bonus, robustny localStorage, BFS validacia levelov, responzivny vizual."
+  "missing": ["Merge v1.2 do main a overenie následného GitHub Pages nasadenia", "Doplnkový playtest na fyzickom telefóne / Safari"],
+  "nextStep": "Skontrolovať PR a zelené GitHub Actions, zlúčiť v1.2, potom overiť publikovanú hru.",
+  "notes": "v1.2: 33 úvodných receptov, 30 kategórií, 50 otázok. Tri prostredia s nádobami podľa surovín. Po spätnej väzbe odstránené stredové efekty pri úspechu aj chybe a pridaná tmavá mapa s piatimi etapami, titulmi a pokračovaním v ceste. Zachované odomykanie a progres. Repo slug zostáva dielnicka."
 }
 ```

@@ -1,49 +1,53 @@
 # ⚗️ Little Alchemist
 
-**Little Alchemist** je oficiálny názov hry.
+Vzdelávacia hra pre mobil aj desktop: **150 levelov**, SK/EN, bez účtu a backendu.
 
-Mobilná aj desktopová webová hra bez účtu. Progres sa ukladá lokálne v prehliadači a hra nepotrebuje backend.
+## v1.2 — pestrejšie objavovanie
 
-## Verzia 1.1
+- **Chémia (50 levelov):** 33 rôznych úvodných receptov, potom rozostúpené návraty s väčším výberom surovín. Prvých 25 levelov neopakuje recept. Všetkých 50 strieda rodiny úloh: roztoky, kovy, farby, reakcie, materiály, teplo, plyn, pena a recyklácia. Obtiažnosť rastie od dvoch po šesť dlaždíc.
+- **Pre život (50 levelov):** 30 pomenovaných kategórií, každá s piatimi členmi a ručne zvolenou odlišnou položkou. 50 jedinečných štvoríc; prvých 30 levelov predstaví všetky kategórie. Témy zahŕňajú more, stanovanie, záchranárstvo, umenie, čas, záhradu či vesmír. Každá položka má emoji alebo vstavanú vektorovú ikonu a text v SK/EN. Nápoveda pomenúva spoločnú skupinu, aby odpoveď nebola nejednoznačná.
+- **Majster alchýmie (50 levelov):** zachované viackrokové recepty a odomykanie; nový reštart pomáha pri spotrebovaní potrebnej suroviny.
+- **Pokojnejšie hranie:** stredové efekty pri úspechu aj chybe sú odstránené. Výsledok sa zobrazí priamo na stole a v textovej správe; hernú plochu nič nezakrýva.
+- Opravené opakované kliknutia počas úspechu a oneskorené dokončenie po odchode z levelu. Neplatné uložené záznamy levelov sa ignorujú.
+- **Tri prostredia:** laboratórny stôl s miskami, skúmavkami a tanierom na ľad; drevená dielnička s kartičkami na štipcoch; stredoveká kamenná dielňa s majstrom, sviečkou a mosadznými nádobami. Slama a pevné materiály ležia priamo na stole. Nádoba aj vzhľad sa zmenia podľa vyrobeného produktu.
 
-- **150 levelov celkom**
-  - 🧪 Chémia — 50 levelov
-  - 🌿 Pre život — 50 levelov
-  - 🔥 Majster alchýmie — 50 levelov
-- postupné odomykanie levelov
-- 1–3 hviezdy podľa chýb
-- XP bez nekonečného farmenia opakovaním rovnakého výsledku
-- denná návratová odmena a streak podľa miestneho dátumu hráča
-- robustnejšie obnovenie poškodeného alebo staršieho `localStorage`
-- slovenské aj anglické rozhranie a obsah
-- responzívny vizuál pre telefón aj desktop
-- automatická kontrola JavaScript syntaxe a základnej štruktúry
-- validácia, že všetkých 50 chemických a 50 náročných levelov je riešiteľných
+- **Cesta za majstrovstvom:** tmavá mapa s nočnou krajinou, piatimi etapami po desať levelov, postupnými titulmi a vinúcou sa cestou. Zvýrazňuje najbližší odomknutý level a ponúka tlačidlo Pokračovať. Hviezdy, číslovanie a pravidlá odomykania zostávajú zachované.
 
-## Herné cesty
+## Spustenie a testy
 
-### 🧪 Chémia
-Hráč spája dve látky alebo materiály a vyrába cieľ. Obtiažnosť rastie pridávaním rušivých možností a širšou paletou receptov.
+### Samostatná offline hra
 
-### 🌿 Pre život
-Logická hra „čo nepatrí“. Každý level obsahuje tri položky z jednej kategórie a jednu odlišnú. Obsah je v slovenčine aj angličtine.
+Celá hra v jednom súbore: [Little-Alchemist-v1.2-offline.html](offline/Little-Alchemist-v1.2-offline.html). Stiahnite súbor a otvorte ho v prehliadači. Nepotrebuje server ani internet; dostupnosť otvorenia lokálneho HTML závisí od mobilného prehliadača. Progres sa medzi zariadeniami automaticky neprenáša.
 
-### 🔥 Majster alchýmie
-Viackrokové recepty. Hráč musí najprv vyrobiť medziprodukt a až potom cieľ, napr. ruda → kov → zliatina alebo vápnik → vápno → hasené vápno → malta.
+Po zmene zdrojov spustite `npm run build:offline` a commitnite aj aktualizovaný súbor v `offline/`. `npm run test:offline` overuje všetky tri režimy, reload progresu a jazyk pri vypnutej sieti.
 
-## Progres
+Otvorte `index.html` alebo priečinok sprístupnite statickým serverom. Herná aplikácia nemá runtime závislosti. Testovacie nástroje sa nenačítavajú do hry.
 
-Hra používa iba `localStorage`. Ukladá dokončené levely, najlepšie hviezdy, XP, jazyk, streak a dennú odmenu.
+```sh
+npm ci
+npm test
+npx playwright install chromium
+npm run test:browser
+```
+
+Obsahové testy overujú syntax, 50/50/50 levelov, riešiteľnosť všetkých 100 alchymistických levelov nezávislým solverom, rozmanitosť, SK/EN/ikonky a kompatibilitu progresu.
+
+Prehliadačový test hrá levely **1/5/10/20/30/40/50 vo všetkých režimoch a oboch jazykoch** (42 scenárov). Overuje odomykanie, reload, XP, zrušenie čakajúceho dokončenia, reštart, neprítomnosť stredových efektov, tmavú mapu a pokračovanie v ceste a obmedzený pohyb. Kontroluje šírky **320, 390, 768 a 1280 px** a ukladá screenshoty do `test-results/`. GitHub Actions spúšťa obe sady a priloží screenshoty ako artefakt.
+
+Lokálne overené na Windows v Chrome s emuláciou dotykového mobilu. Emulácia nenahrádza test na fyzickom telefóne ani Safari/iOS. Výsledky sú v [QA-v1.2.md](QA-v1.2.md).
+
+## Progres a kompatibilita
+
+Kľúč `localStorage` zostáva **little_alchemist_v1**. Dokončené levely, hviezdy, XP, jazyk, streak a denná odmena sa zachovávajú. Čísla levelov nemeníme; starší hráči môžu prehrať nový obsah už odomknutých levelov. Vyššie hviezdy odmenia len zlepšenie, rovnaký výsledok nepridá ďalšie XP.
 
 ## Súbory
 
-- `index.html` — hlavné UI
-- `little-alchemist-v1.css` — vizuál a responzívne rozloženie
-- `app.js` — herná logika, recepty, 150 levelov, progres a validácia
+- `app.js` — obsah, pravidlá, progres, vstavané ikony a mapa cesty
+- `index.html`, `little-alchemist-v1.css` — responzívne rozhranie
+- `tests/content.cjs`, `tests/browser.cjs` — regresné testy
 - `.github/workflows/little-alchemist-check.yml` — automatické kontroly
+- `NEXUS-STATUS.md`, `AI-BRIEFING.md` — stav a pravidlá projektu
 
-## Repozitár
+Repozitár zostáva **najxosk/dielnicka**, názov hry je **Little Alchemist**. [Publikovaná hra](https://najxosk.github.io/dielnicka/) zodpovedá nasadenej vetve main; v1.2 sa sprístupní po merge a nasadení. Premenovanie repozitára nie je súčasťou tejto verzie.
 
-Cieľový názov repozitára je **`Little-Alchemist`**. GitHub URL nepoužíva medzery, preto je spojovník správny tvar. Po premenovaní treba overiť nový GitHub Pages projektový odkaz a aktualizovať odkazy v Project Nexus.
-
-Pri chemických a výrobných receptoch ide o zjednodušený vzdelávací model vhodný pre hru; nejde o laboratórny postup ani bezpečnostný návod.
+Recepty sú zjednodušené herné modely, nie laboratórne postupy. Emulzia predpokladá miešanie, hrdzavenie aj vlhkosť a výroba kovov/skla vhodné spracovanie a teplo.

@@ -1,7 +1,7 @@
 name: Little Alchemist checks
 on:
   push:
-    branches: [main, little-alchemist-stability]
+    branches: [main, little-alchemist-stability, little-alchemist-v1.2]
   pull_request:
     branches: [main]
 jobs:
@@ -12,8 +12,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: JavaScript syntax
-        run: node --check app.js
+      - run: npm ci
+      - name: Syntax, content diversity and independent level solver
+        run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Gameplay, progress, SK/EN and mobile layouts
+        run: npm run test:browser
+      - name: Standalone offline game
+        run: |
+          npm run build:offline
+          git diff --exit-code -- offline/
+          npm run test:offline
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-screenshots
+          path: test-results/
       - name: Required files and branding
         run: |
           test -s index.html

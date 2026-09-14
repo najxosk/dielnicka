@@ -1,0 +1,14 @@
+{
+  "name": "little-alchemist",
+  "version": "1.2.0",
+  "private": true,
+  "scripts": {
+    "test": "node --check app.js && node tests/content.cjs",
+    "test:browser": "node tests/browser.cjs",
+    "build:offline": "node scripts/build-offline.cjs",
+    "test:offline": "node tests/offline.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
